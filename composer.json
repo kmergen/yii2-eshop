@@ -1,0 +1,22 @@
+{
+    "name": "kmergen/yii2-eshop",
+    "description": "A Yii2 Eshop module",
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "keywords": ["yii", "yii2", "extension", "shop", "cart"],
+    "authors": [
+        {
+            "name": "Klaus Megen",
+            "email": "kmergenweb@gmail.com"
+
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "kmergen\\eshop\\": ""
+        }
+    },
+    "require": {
+        "yiisoft/yii2": "~2.0.6"
+    }
+}
