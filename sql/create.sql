@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `eshop_order_item` (
 	`sell_price` DECIMAL(15,4) NOT NULL,
 	`data` TEXT NULL DEFAULT NULL COMMENT 'A serialized array of extra data.',
 	PRIMARY KEY (`order_id`, `article_id`),
-	CONSTRAINT `FK_eshop_order_details_eshop_order` FOREIGN KEY (`order_id`) REFERENCES `eshop_order` (`id`) ON DELETE CASCADE
+	CONSTRAINT `FK_eshop_order_item_eshop_order` FOREIGN KEY (`order_id`) REFERENCES `eshop_order` (`id`) ON DELETE CASCADE
 )
 COMMENT='The products that have been ordered.'
 COLLATE='utf8_general_ci'

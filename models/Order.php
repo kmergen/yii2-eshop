@@ -25,13 +25,13 @@ namespace app\modules\eshop\models;
  * @property string $host
  * @property string $comment
  *
- * @property EshopOrderDetails $eshopOrderDetails
+ * @property EshopOrderItem $eshopOrderItem
  */
 class Order extends \yii\db\ActiveRecord
 {
 
     public $orderArticles = [];
-    private $_tableOrderDetails = 'eshop_order_details';
+    private $_tableOrderItem = 'eshop_order_item';
 
     /**
      * @inheritdoc
@@ -88,9 +88,9 @@ class Order extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveRelation
      */
-    public function getEshopOrderDetails()
+    public function getEshopOrderItem()
     {
-        return $this->hasOne(EshopOrderDetails::className(), ['order_id' => 'id']);
+        return $this->hasOne(EshopOrderItem::className(), ['order_id' => 'id']);
     }
 
     public function afterSave($insert)
@@ -106,7 +106,7 @@ class Order extends \yii\db\ActiveRecord
                     $record['sku'] = $Article['sku'];
                     $record['qty'] = $Article['qty'];
                     $record['sell_price'] = $Article['sell_price'];
-                    $command->insert($this->_tableOrderDetails, $record)->execute();
+                    $command->insert($this->_tableOrderItem, $record)->execute();
                 }
             }
         }
