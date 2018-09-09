@@ -5,8 +5,8 @@ $this->breadcrumbs=array(
 );
 
 $this->menu=array(
-	array('label'=>'List Article', 'url'=>array('index')),
-	array('label'=>'Create Article', 'url'=>array('create')),
+	array('label'=>'List ArticleOld', 'url'=>array('index')),
+	array('label'=>'Create ArticleOld', 'url'=>array('create')),
 );
 
 Yii::$app->clientScript->registerScript('search', "
@@ -15,7 +15,7 @@ $('.search-button').click(function(){
 	return false;
 });
 $('.search-form form').submit(function(){
-	$.fn.yiiGridView.update('Article-grid', {
+	$.fn.yiiGridView.update('ArticleOld-grid', {
 		data: $(this).serialize()
 	});
 	return false;
@@ -38,7 +38,7 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 </div><!-- search-form -->
 
 <?php $this->widget('zii.widgets.grid.CGridView', array(
-	'id'=>'Article-grid',
+	'id'=>'ArticleOld-grid',
 	'dataProvider'=>$model->search(),
 	'filter'=>$model,
 	'columns'=>array(
@@ -48,9 +48,6 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 		'description',
 		'sell_price',
 		'default_qty',
-		/*
-		'ordering',
-		*/
 		array(
 			'class'=>'CButtonColumn',
 		),

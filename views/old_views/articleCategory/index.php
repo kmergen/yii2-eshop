@@ -1,6 +1,6 @@
 <?php
 $this->breadcrumbs=array(
-	'Article Categories',
+	'ArticleOld Categories',
 );
 
 $this->menu=array(

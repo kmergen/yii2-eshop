@@ -1,6 +1,6 @@
 <?php
 $this->breadcrumbs=array(
-	'Article Categories'=>array('index'),
+	'ArticleOld Categories'=>array('index'),
 	'Create',
 );
 

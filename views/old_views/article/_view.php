@@ -23,10 +23,4 @@
 	<b><?php echo CHtml::encode($data->getAttributeLabel('default_qty')); ?>:</b>
 	<?php echo CHtml::encode($data->default_qty); ?>
 	<br />
-
-	<b><?php echo CHtml::encode($data->getAttributeLabel('ordering')); ?>:</b>
-	<?php echo CHtml::encode($data->ordering); ?>
-	<br />
-
-
 </div>

@@ -3,11 +3,11 @@ jQuery(function ($) {
   function enableCheckoutInput(){
 	$("button,input").prop('disabled', false);
   }
-  
+
   function disableCheckoutInput(){
     $("button,input").prop('disabled', true);
   }
-  
+
   /*
   function disableCheckoutInput(){
 	  $('input').each(function(){
@@ -15,17 +15,17 @@ jQuery(function ($) {
 	  });
   }
   */
-  
+
   function removeErrorFromPaymentMethods(){
-	
-  }	
-  
-  //Payment methods	
+
+  }
+
+  //Payment methods
   $('#checkout-form').on('change','.payment-method',function(e){
 	//We disable all input fields to prevent clicking during the ajax call
 	disableCheckoutInput();
-	var paymentMethod=$(this).val(); 
-		
+	var paymentMethod=$(this).val();
+
 	$.ajax({
 	  type: 'POST',
 	  dataType: 'html',
@@ -38,10 +38,10 @@ jQuery(function ($) {
    });
 	$(".payment-methods-error").empty();
 	enableCheckoutInput();
-  });	
-   
+  });
+
   //Cart Pane
-  $('#checkout-form').on('change','.Article-qty',function(e){
+  $('#checkout-form').on('change','.ArticleOld-qty',function(e){
 	//We disable all input fields to prevent clicking during the ajax call
 	disableCheckoutInput();
 
@@ -53,7 +53,7 @@ jQuery(function ($) {
 	else{
 	  qty=0;
 	}
-		
+
 	$.ajax({
 	  type: 'POST',
 	  dataType: 'html',

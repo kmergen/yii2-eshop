@@ -1,6 +1,6 @@
 <?php
 $this->breadcrumbs=array(
-	'Article Categories'=>array('index'),
+	'ArticleOld Categories'=>array('index'),
 	'Manage',
 );
 
@@ -15,7 +15,7 @@ $('.search-button').click(function(){
 	return false;
 });
 $('.search-form form').submit(function(){
-	$.fn.yiiGridView.update('Article-category-grid', {
+	$.fn.yiiGridView.update('ArticleOld-category-grid', {
 		data: $(this).serialize()
 	});
 	return false;
@@ -38,7 +38,7 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 </div><!-- search-form -->
 
 <?php $this->widget('zii.widgets.grid.CGridView', array(
-	'id'=>'Article-category-grid',
+	'id'=>'ArticleOld-category-grid',
 	'dataProvider'=>$model->search(),
 	'filter'=>$model,
 	'columns'=>array(

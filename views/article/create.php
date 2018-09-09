@@ -1,15 +1,21 @@
 <?php
-$this->breadcrumbs=array(
-	'Articles'=>array('index'),
-	'Create',
-);
 
-$this->menu=array(
-	array('label'=>'List Article', 'url'=>array('index')),
-	array('label'=>'Manage Article', 'url'=>array('admin')),
-);
+use yii\helpers\Html;
+
+
+/* @var $this yii\web\View */
+/* @var $model kmergen\eshop\models\Article */
+
+$this->title = Yii::t('eshop', 'Create Article');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Articles'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
 ?>
+<div class="article-create">
 
-<h1>Create Article</h1>
+    <h1><?= Html::encode($this->title) ?></h1>
 
-<?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
+    <?= $this->render('_form', [
+        'model' => $model,
+    ]) ?>
+
+</div>

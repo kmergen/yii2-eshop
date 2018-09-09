@@ -18,7 +18,7 @@ class CheckoutController extends Controller
      * @event Event an event that is triggered when the checkout action aborts.
      */
     const EVENT_CHECKOUT_ABORT = 'checkoutAbort';
-    
+
     /**
      * @event Event an event that is triggered after the payment.
      */
@@ -84,7 +84,7 @@ class CheckoutController extends Controller
             $paymentModel = null;
 
             if (isset($_POST['btnSave'])) {
-                //Check if there is a Article in the cart
+                //Check if there is a ArticleOld in the cart
                 if (!isset($_POST['articles'])) {
                     $this->checkoutAbort();
                     return $this->render('abort');
@@ -104,7 +104,7 @@ class CheckoutController extends Controller
                 $address->attributes = $_POST['Address'];
 
                 if ($address->validate() && $paymentModelValidate && $checkoutForm->validate()) {
-                    
+
                     $order = new Order;
                     $order->uid = $this->_uid;
                     $order->billing_firstname = $address->firstname;
@@ -155,7 +155,7 @@ class CheckoutController extends Controller
      */
     public function complete()
     {
-        
+
         $this->afterPayment();
         $returnUrl = Yii::$app->session->get('checkoutReturnUrl');
         if ($this->params['status'] === 'success') {
@@ -190,7 +190,7 @@ class CheckoutController extends Controller
     /**
      * This function is called via ajax when we change the qty checkbox or the qty textfield
      * @param string ArticleId in the form ArticleId e.g Article_400
-     * @param qty the new qty 
+     * @param qty the new qty
      * @return string html the rendered cartPane
      */
     public function actionUpdateCartItem()
@@ -224,7 +224,7 @@ class CheckoutController extends Controller
 
         $this->trigger(self::EVENT_CHECKOUT_ABORT);
     }
-    
+
     /**
      * This function is called after payment
      */
@@ -232,7 +232,7 @@ class CheckoutController extends Controller
     {
         //We set here the Ad event handler but we must find a better way to do this
         $this->on(self::EVENT_AFTER_PAYMENT, ['app\models\Ad', 'handleAfterPayment'], $this->params);
-        
+
         $this->trigger(self::EVENT_AFTER_PAYMENT);
     }
 

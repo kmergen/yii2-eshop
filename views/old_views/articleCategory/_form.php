@@ -1,7 +1,7 @@
 <div class="form">
 
 <?php $form=$this->beginWidget('CActiveForm', array(
-	'id'=>'Article-category-form',
+	'id'=>'ArticleOld-category-form',
 	'enableAjaxValidation'=>false,
 )); ?>
 

@@ -1,60 +1,61 @@
-<div class="form">
+<?php
 
-<?php $form=$this->beginWidget('CActiveForm', array(
-	'id'=>'Article-form',
-	'enableAjaxValidation'=>false,
-)); ?>
+use yii\helpers\Html;
+use yii\bootstrap4\ActiveForm;
+use yii\helpers\ArrayHelper;
+use kmergen\eshop\models\ArticleCategory;
+use kmergen\media\widgets\dropzone\Dropzone;
 
-	<p class="note">Fields with <span class="required">*</span> are required.</p>
+/* @var $this yii\web\View */
+/* @var $model kmergen\eshop\models\Article */
+/* @var $form yii\bootstrap4\ActiveForm */
+?>
 
-	<?php echo $form->errorSummary($model); ?>
-	<div class="row">
-	  <?php echo $categoryModels=ArticleCategory::model()->findAll(); ?>
-	  <?php echo $form->labelEx($model,'category_id'); ?>
-		<?php echo $form->DropDownList($model,'category_id',CHtml::listData($categoryModels,'id','name')); ?>
-		<?php echo $form->error($model,'category_id'); ?>
-	</div>
+<div class="article-form">
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'sku'); ?>
-		<?php echo $form->textField($model,'sku',array('size'=>60,'maxlength'=>255)); ?>
-		<?php echo $form->error($model,'sku'); ?>
-	</div>
+    <?php $form = ActiveForm::begin(); ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'title'); ?>
-		<?php echo $form->textField($model,'title',array('size'=>60,'maxlength'=>150)); ?>
-		<?php echo $form->error($model,'title'); ?>
-	</div>
+    <?= $form->field($model, 'sku')->textInput(['maxlength' => true]) ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'description'); ?>
-		<?php echo $form->textArea($model,'description',array('rows'=>6, 'cols'=>50)); ?>
-		<?php echo $form->error($model,'description'); ?>
-	</div>
+    <?= $form->field($model, 'category_id')->dropDownList(ArrayHelper::map(ArticleCategory::find()->asArray()->all(), 'id', 'name')) ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'sell_price'); ?>
-		<?php echo $form->textField($model,'sell_price',array('size'=>15,'maxlength'=>15)); ?>
-		<?php echo $form->error($model,'sell_price'); ?>
-	</div>
+    <?= $form->field($model, 'title')->textInput(['maxlength' => true]) ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'default_qty'); ?>
-		<?php echo $form->textField($model,'default_qty'); ?>
-		<?php echo $form->error($model,'default_qty'); ?>
-	</div>
+    <?= $form->field($model, 'description')->textarea(['rows' => 6]) ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'ordering'); ?>
-		<?php echo $form->textField($model,'ordering'); ?>
-		<?php echo $form->error($model,'ordering'); ?>
-	</div>
+    <?= $form->field($model, 'sell_price')->textInput(['maxlength' => true]) ?>
 
-	<div class="row buttons">
-		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save'); ?>
-	</div>
+    <?= $form->field($model, 'default_qty')->dropDownList(array_combine(range(1,20),range(1,20))) ?>
 
-<?php $this->endWidget(); ?>
+    <?= $form->field($model, 'active')->dropDownList(['0' => Yii::t('eshop', 'No'), '1' => Yii::t('eshop', 'Yes')]) ?>
 
-</div><!-- form -->
+    <div>
+        <?= Dropzone::widget([
+            'model' => $model,
+            'languages' => Yii::$app->language,
+            'thumbStyle' => 'medium',
+            'options' => [
+                'url' => '/media/dropzone/upload',
+                'acceptedFiles' => '.png,.jpg,.gif,.jpeg',
+                'resizeWidth' => 1600,
+                'createImageThumbnails' => true,
+                'autoProcessQueue' => true,
+                'maxFiles' => 5,
+                'dictMaxFilesExceeded' => 'Die maximale Anzahl von 5 Bildern ist erreicht.',
+                'dictCancelUpload' => '',
+                'dictDefaultMessage' => '',
+                'params' => [
+                    'targetUrl' => 'images/eshop/article'
+                ]
+            ],
+        ]);
+        ?>
+    </div>
+
+    <div class="form-group">
+        <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
+</div>

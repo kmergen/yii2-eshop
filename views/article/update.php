@@ -1,18 +1,23 @@
 <?php
-$this->breadcrumbs=array(
-	'Articles'=>array('index'),
-	$model->title=>array('view','id'=>$model->id),
-	'Update',
-);
 
-$this->menu=array(
-	array('label'=>'List Article', 'url'=>array('index')),
-	array('label'=>'Create Article', 'url'=>array('create')),
-	array('label'=>'View Article', 'url'=>array('view', 'id'=>$model->id)),
-	array('label'=>'Manage Article', 'url'=>array('admin')),
-);
+use yii\helpers\Html;
+
+/* @var $this yii\web\View */
+/* @var $model kmergen\eshop\models\Article */
+
+$this->title = Yii::t('eshop', 'Update Article: ' . $model->title, [
+    'nameAttribute' => '' . $model->title,
+]);
+$this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Articles'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => $model->title, 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = Yii::t('eshop', 'Update');
 ?>
+<div class="article-update">
 
-<h1>Update Article <?php echo $model->id; ?></h1>
+    <h1><?= Html::encode($this->title) ?></h1>
 
-<?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
+    <?= $this->render('_form', [
+        'model' => $model,
+    ]) ?>
+
+</div>

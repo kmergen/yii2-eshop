@@ -22,7 +22,7 @@ class Cart
         Yii::$app->session->remove(self::CART_ID);
         Yii::$app->session->remove('cartLastUrl');
     }
-    
+
     /**
      * Delete the cart session variable
      */
@@ -30,8 +30,8 @@ class Cart
     {
         Yii::$app->session->remove(self::CART_ID);
     }
-    
-    
+
+
     /**
      * Delete all items from the cart so the cart is empty
      */
@@ -39,7 +39,7 @@ class Cart
     {
         Yii::$app->session->set(self::CART_ID, []);
     }
-   
+
     /**
      * Adds an item to the cart.
      * @param $id the unique article id
@@ -50,8 +50,8 @@ class Cart
     {
         if (($cart = Yii::$app->session->get(self::CART_ID)) === null) {
             $cart = [];
-        } 
-        
+        }
+
         $default_qty = Yii::$app->db->createCommand("SELECT default_qty FROM eshop_article WHERE id=:id", [':id' => $id])->queryScalar();
 
         //If the article is not in the cart yet we add it
@@ -62,7 +62,7 @@ class Cart
                 Yii::$app->session->setFlash('success', "Produkt wurde in Ihren Warenkorb gelegt.");
             }
         }
-        //If the default_qty = 0 we do nothing because it was add the first time with the right qty 1 
+        //If the default_qty = 0 we do nothing because it was add the first time with the right qty 1
         elseif ($default_qty > 0) {
             $cart[$id] += $qty;
             if ($msg) {
@@ -159,7 +159,7 @@ class Cart
         $header.='<table class="tbl-cart-pane">';
         $header.='<thead><tr>';
         $header.='<th>' . Module::t('Quantity') . '</th>';
-        $header.='<th>' . Module::t('Article') . '</th>';
+        $header.='<th>' . Module::t('ArticleOld') . '</th>';
         $header.='<th>' . Module::t('Price') . '</th>';
         $header.='<th>' . Module::t('Price') . '</th>';
         $header.='</tr></thead>';

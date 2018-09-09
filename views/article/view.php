@@ -1,29 +1,44 @@
 <?php
-$this->breadcrumbs=array(
-	'Articles'=>array('index'),
-	$model->title,
-);
 
-$this->menu=array(
-	array('label'=>'List Article', 'url'=>array('index')),
-	array('label'=>'Create Article', 'url'=>array('create')),
-	array('label'=>'Update Article', 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>'Delete Article', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-	array('label'=>'Manage Article', 'url'=>array('admin')),
-);
+use yii\helpers\Html;
+use yii\widgets\DetailView;
+
+/* @var $this yii\web\View */
+/* @var $model kmergen\eshop\models\Article */
+
+$this->title = $model->title;
+$this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Articles'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
 ?>
+<div class="article-view">
 
-<h1>View Article #<?php echo $model->id; ?></h1>
+    <h1><?= Html::encode($this->title) ?></h1>
 
-<?php $this->widget('zii.widgets.CDetailView', array(
-	'data'=>$model,
-	'attributes'=>array(
-		'id',
-		'sku',
-		'title',
-		'description',
-		'sell_price',
-		'default_qty',
-		'ordering',
-	),
-)); ?>
+    <p>
+        <?= Html::a(Yii::t('eshop', 'Update'), ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a(Yii::t('eshop', 'Delete'), ['delete', 'id' => $model->id], [
+            'class' => 'btn btn-danger',
+            'data' => [
+                'confirm' => Yii::t('eshop', 'Are you sure you want to delete this item?'),
+                'method' => 'post',
+            ],
+        ]) ?>
+    </p>
+
+    <?= DetailView::widget([
+        'model' => $model,
+        'attributes' => [
+            'id',
+            'sku',
+            'category_id',
+            'title',
+            'description:ntext',
+            'sell_price',
+            'default_qty',
+            'active',
+            'created_at',
+            'updated_at',
+        ],
+    ]) ?>
+
+</div>

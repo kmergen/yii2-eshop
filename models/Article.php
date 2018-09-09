@@ -1,73 +1,109 @@
 <?php
 
-namespace app\modules\eshop\models;
+namespace kmergen\eshop\models;
+
+use Yii;
+use kmergen\media\behaviors\MediaAlbumBehavior;
+use kmergen\media\models\Media;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
+use yii\filters\AccessControl;
 
 /**
  * This is the model class for table "eshop_article".
  *
- * @property string $id
- * @property string $category_id
- * @property string $sku
- * @property string $title
- * @property string $description
+ * @property int $id The product id
+ * @property string $sku SKU or model number.
+ * @property int $category_id FK The category id from table eshop_product_category
+ * @property string $title The title of the product
+ * @property string $description The description of the product
  * @property string $sell_price
- * @property integer $default_qty
- * @property integer $selectable
- * @property integer $ordering
+ * @property int $default_qty
+ * @property int $active
+ * @property string $created_at
+ * @property string $updated_at
  *
- * @property EshopArticleCategory $category
+ * @property ArticleCategory $category
  */
 class Article extends \yii\db\ActiveRecord
 {
-    const ARTICLE_TYPE_STANDARD = 1; // The standard Article with shipping
-    const ARTICLE_TYPE_ESD = 2; // A ELECTRONIC SOFTWARE DISTRIBUTIN Article that you can download in the shop after payment without shipping
-    
-	/**
-	 * @inheritdoc
-	 */
-	public static function tableName()
-	{
-		return 'eshop_article';
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName()
+    {
+        return 'eshop_article';
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		return [
-			[['category_id', 'description', 'selectable'], 'required'],
-			[['category_id', 'default_qty', 'selectable', 'ordering'], 'integer'],
-			[['description'], 'string'],
-			[['sell_price'], 'number'],
-			[['sku'], 'string', 'max' => 255],
-			[['title'], 'string', 'max' => 150]
-		];
-	}
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'modelimages' => [
+                'class' => MediaAlbumBehavior::class,
+                'attribute' => 'media_album_id',
+            ],
+            'timestamp' => [
+                'class' => TimestampBehavior::class,
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function attributeLabels()
-	{
-		return [
-			'id' => 'ID',
-			'category_id' => 'Category ID',
-			'sku' => 'Sku',
-			'title' => 'Title',
-			'description' => 'Description',
-			'sell_price' => 'Sell Price',
-			'default_qty' => 'Default Qty',
-			'selectable' => 'Selectable',
-			'ordering' => 'Ordering',
-		];
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['title', 'sku', 'category_id', 'description', 'sell_price'], 'required'],
+            [['category_id', 'default_qty', 'active'], 'integer'],
+            [['description'], 'string'],
+            [['sell_price'], 'number'],
+            [['created_at', 'updated_at'], 'safe'],
+            [['sku'], 'string', 'max' => 255],
+            [['title'], 'string', 'max' => 150],
+            [['sku'], 'unique'],
+            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => ArticleCategory::class, 'targetAttribute' => ['category_id' => 'id']],
+        ];
+    }
 
-	/**
-	 * @return \yii\db\ActiveRelation
-	 */
-	public function getCategory()
-	{
-		return $this->hasOne(EshopArticleCategory::className(), ['id' => 'category_id']);
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => Yii::t('eshop', 'ID'),
+            'sku' => Yii::t('eshop', 'Sku'),
+            'category_id' => Yii::t('eshop', 'Category ID'),
+            'title' => Yii::t('eshop', 'Title'),
+            'description' => Yii::t('eshop', 'Description'),
+            'sell_price' => Yii::t('eshop', 'Sell Price'),
+            'default_qty' => Yii::t('eshop', 'Default Qty'),
+            'active' => Yii::t('eshop', 'Active'),
+            'created_at' => Yii::t('eshop', 'Created At'),
+            'updated_at' => Yii::t('eshop', 'Updated At'),
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCategory()
+    {
+        return $this->hasOne(ArticleCategory::class, ['id' => 'category_id']);
+    }
+
+    /**
+     * Because we retrieving records as arrays from model in [[ArticleSearch]] class we use this ActiveQuery to get the images,
+     * because afterFind() function in [[kmergen\media\behaviors\MediaAlbumBehavior]] not called.
+     * @return \yii\db\ActiveQuery
+     */
+    public function getImages()
+    {
+        return $this->hasMany(Media::class, ['album_id' => 'media_album_id']);
+    }
 }
