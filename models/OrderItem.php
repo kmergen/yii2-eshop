@@ -1,0 +1,69 @@
+<?php
+
+namespace kmergen\eshop\models;
+
+use Yii;
+
+/**
+ * This is the model class for table "eshop_order_item".
+ *
+ * @property int $order_id The sc_order.order_id.
+ * @property int $article_id The product id from table product
+ * @property string $title The product title, from node.title.
+ * @property string $sku The product model/SKU, from sc_products.model.
+ * @property int $qty
+ * @property string $sell_price
+ * @property string $data A serialized array of extra data.
+ *
+ * @property Order $order
+ */
+class OrderItem extends \yii\db\ActiveRecord
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName()
+    {
+        return 'eshop_order_item';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['order_id', 'article_id', 'qty', 'sell_price'], 'required'],
+            [['order_id', 'article_id', 'qty'], 'integer'],
+            [['sell_price'], 'number'],
+            [['data'], 'string'],
+            [['title', 'sku'], 'string', 'max' => 255],
+            [['order_id', 'article_id'], 'unique', 'targetAttribute' => ['order_id', 'article_id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'order_id' => Yii::t('app', 'Order ID'),
+            'article_id' => Yii::t('app', 'ArticleOld ID'),
+            'title' => Yii::t('app', 'Title'),
+            'sku' => Yii::t('app', 'Sku'),
+            'qty' => Yii::t('app', 'Qty'),
+            'sell_price' => Yii::t('app', 'Sell Price'),
+            'data' => Yii::t('app', 'Data'),
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getOrder()
+    {
+        return $this->hasOne(Order::class, ['id' => 'order_id']);
+    }
+}
