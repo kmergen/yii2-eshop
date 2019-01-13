@@ -1,16 +1,13 @@
 <?php
 
-namespace app\modules\eshop\models;
+namespace kmergen\eshop\models\braintree;
 
-use app\modules\eshop\Module;
 use yii\base\Model;
 
 /**
- * Novalnet Transfer Model (Sofortüberweisung)
- * This model hold the data structure for keeping
- * transfer form data. It is used by the 'index' action of 'CheckoutController'.
+ * Paypal Form Model
  */
-class PaypalBasicForm extends Model
+class PaypalForm extends Model
 {
 
     public $infoText = '';
@@ -24,7 +21,7 @@ class PaypalBasicForm extends Model
             ['infoText', 'safe'],
         );
     }
-  
+
 
     /**
      * Declares customized attribute labels.

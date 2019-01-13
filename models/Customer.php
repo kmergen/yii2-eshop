@@ -3,12 +3,13 @@
 namespace kmergen\eshop\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "eshop_customer".
  *
  * @property int $id
- * @property int $address_id
  * @property string $email
  * @property int $user_id The user id from the yii application
  * @property string $birthday
@@ -16,9 +17,8 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Address[] $eshopAddresses
- * @property Address $address
- * @property Order[] $Orders
+ * @property EshopAddress $address
+ * @property EshopOrder[] $eshopOrders
  */
 class Customer extends \yii\db\ActiveRecord
 {
@@ -31,18 +31,30 @@ class Customer extends \yii\db\ActiveRecord
     }
 
     /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::class,
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['address_id', 'email'], 'required'],
-            [['address_id', 'user_id'], 'integer'],
-            [['birthday', 'created_at', 'updated_at'], 'safe'],
+            [['email'], 'required'],
+            [['user_id'], 'integer'],
+            [['birthday'], 'safe'],
             [['email'], 'string', 'max' => 255],
             [['gender'], 'string', 'max' => 1],
             [['email'], 'unique'],
-            [['address_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::class, 'targetAttribute' => ['address_id' => 'id']],
         ];
     }
 
@@ -52,30 +64,29 @@ class Customer extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('app', 'ID'),
-            'address_id' => Yii::t('app', 'Address ID'),
-            'email' => Yii::t('app', 'Email'),
-            'user_id' => Yii::t('app', 'User ID'),
-            'birthday' => Yii::t('app', 'Birthday'),
-            'gender' => Yii::t('app', 'Gender'),
-            'created_at' => Yii::t('app', 'Created At'),
-            'updated_at' => Yii::t('app', 'Updated At'),
+            'id' => Yii::t('eshop', 'ID'),
+            'email' => Yii::t('eshop', 'Email'),
+            'user_id' => Yii::t('eshop', 'User ID'),
+            'birthday' => Yii::t('eshop', 'Birthday'),
+            'gender' => Yii::t('eshop', 'Gender'),
+            'created_at' => Yii::t('eshop', 'Created At'),
+            'updated_at' => Yii::t('eshop', 'Updated At'),
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getAddress()
+    public function getAddresses()
     {
-        return $this->hasOne(Address::class, ['id' => 'address_id']);
+        return $this->hasMany(Address::class, ['customer_id' => 'id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getOrders()
+    public function getEshopOrders()
     {
-        return $this->hasMany(Order::class, ['customer_id' => 'id']);
+        return $this->hasMany(Order::className(), ['customer_id' => 'id']);
     }
 }

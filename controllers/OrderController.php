@@ -8,6 +8,7 @@ use kmergen\eshop\models\OrderSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\base\Event;
 
 /**
  * OrderController implements the CRUD actions for Order model.

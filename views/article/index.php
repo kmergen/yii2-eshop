@@ -1,8 +1,10 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ListView;
 use kmergen\widgets\DropdownButtonSorter;
+use yii\grid\GridView;
+use kmergen\eshop\grid\ActionColumn;
+use kmergen\widgets\LinkPager;
 
 /* @var $this yii\web\View */
 /* @var $searchModel kmergen\eshop\models\ArticleSearch */
@@ -22,25 +24,27 @@ $this->params['breadcrumbs'][] = Yii::t('eshop', 'Article');
         <?= Html::a(Yii::t('eshop', 'Create Article'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
-    <?php
-    echo $this->render('_search', [
-        'model' => $searchModel
-    ]);
+    <?= GridView::widget([
+        'dataProvider' => $dataProvider,
+        'filterModel' => $searchModel,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
 
-    ?>
+            'id',
+            'sku',
+            'category_id',
+            'title',
+            'description',
+            'sell_price',
+            'created_at',
+            //'province',
+            //'country_code',
+            //'phone1',
+            //'phone2',
+            //'created_at',
+            //'updated_at',
 
-    <div class="row">
-        <div class="col-12">
-            <?php $b = ListView::begin([
-                'dataProvider' => $dataProvider,
-                'itemView' => '_articleItem',
-                'layout' => "{items}\n{pager}",
-                'itemOptions' => ['class' => 'article-item'],
-                'sorter' => [
-                    'class' => DropdownButtonSorter::class,
-                ]
-            ]) ?>
-            <?php ListView::end(); ?>
-        </div>
-    </div>
+            ['class' => ActionColumn::class],
+        ],
+    ]); ?>
 </div>

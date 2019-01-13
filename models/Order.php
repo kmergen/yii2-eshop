@@ -3,6 +3,8 @@
 namespace kmergen\eshop\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "eshop_order".
@@ -36,6 +38,19 @@ class Order extends \yii\db\ActiveRecord
     }
 
     /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::class,
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function rules()
@@ -45,7 +60,6 @@ class Order extends \yii\db\ActiveRecord
             [['customer_id', 'invoice_address_id', 'shipping_address_id'], 'integer'],
             [['total'], 'number'],
             [['data', 'comment'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
             [['status'], 'string', 'max' => 32],
             [['ip'], 'string', 'max' => 255],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],

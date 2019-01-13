@@ -1,15 +1,15 @@
 <?php
 
-namespace app\modules\eshop\controllers;
+namespace kmergen\eshop\controllers;
 
 use Yii;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
-use app\modules\eshop\helpers\Cart;
+use kmergen\eshop\helpers\Cart;
 use yii\web\HttpException;
-use app\modules\eshop\models\CheckoutForm;
-use app\modules\eshop\models\Address;
-use app\modules\eshop\models\Order;
+use kmergen\eshop\models\CheckoutForm;
+use kmergen\eshop\models\Address;
+use kmergen\eshop\models\Order;
 
 class CheckoutController extends Controller
 {
@@ -94,7 +94,7 @@ class CheckoutController extends Controller
 
                 $checkoutForm->attributes = $_POST['CheckoutForm'];
                 if ($checkoutForm->validate(['paymentMethod'])) {
-                    $m = 'app\modules\eshop\models\\' . $checkoutForm->paymentMethod . 'Form';
+                    $m = 'kmergen\eshop\models\\' . $checkoutForm->paymentMethod . 'Form';
                     $paymentModel = new $m;
                     if ($paymentModel->load($_POST) && $paymentModel->validate()) {
                         $paymentModelValidate = true;
@@ -180,7 +180,7 @@ class CheckoutController extends Controller
      */
     public function actionChangePaymentMethod()
     {
-        $m = 'app\modules\eshop\models\\' . $_POST["paymentMethod"] . 'Form';
+        $m = 'kmergen\eshop\models\\' . $_POST["paymentMethod"] . 'Form';
         $model = new $m;
         $pane = strtolower($_POST['paymentMethod']) . '_pane';
         echo $this->renderPartial($pane, ['model' => $model]);

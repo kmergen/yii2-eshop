@@ -2,6 +2,9 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use kmergen\eshop\grid\ActionColumn;
+use kmergen\widgets\LinkPager;
+
 
 /* @var $this yii\web\View */
 /* @var $searchModel kmergen\eshop\models\CustomerSearch */
@@ -34,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
             //'created_at',
             //'updated_at',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            ['class' => ActionColumn::class],
         ],
     ]); ?>
 </div>

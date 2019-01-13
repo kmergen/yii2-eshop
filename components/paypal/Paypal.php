@@ -1,8 +1,8 @@
 <?php
 
-namespace app\modules\eshop\components\Paypal;
+namespace kmergen\eshop\components\Paypal;
 
-use app\modules\eshop\components\Paygate;
+use kmergen\eshop\components\Paygate;
 use yii\base\Exception;
 
 /**
@@ -16,13 +16,13 @@ class Paypal extends Paygate
     const API_USERNAME = 'klaus.mergen_api1.web.de';
     const API_PASSWORD = 'DC5LQAEVTA6EBATN';
     const ENDPOINT = 'https://api-3t.paypal.com/nvp';
-    
+
     const API_SIGNATUR_SANDBOX = 'AFcWxV21C7fd0v3bYYYRCpSSRl31AInuqmY-NrGhzuWh5EgtZdHPUzTe';
     const API_USERNAME_SANDBOX = 'kmergen-test_api1.web.de';
     const API_PASSWORD_SANDBOX = '1388849436';
     const ENDPOINT_SANDBOX = 'https://api-3t.sandbox.paypal.com/nvp';
-    
-    
+
+
 
     public $id = 'Paypal';
     public $curlTimeout = 360;

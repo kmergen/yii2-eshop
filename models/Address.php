@@ -3,6 +3,8 @@
 namespace kmergen\eshop\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "eshop_address".
@@ -21,12 +23,25 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Customer $customer
+ * @property EshopCustomer[] $eshopCustomers
  * @property EshopOrder[] $eshopOrders
-
+ * @property EshopOrder[] $eshopOrders0
  */
 class Address extends \yii\db\ActiveRecord
 {
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::class,
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -42,9 +57,7 @@ class Address extends \yii\db\ActiveRecord
     {
         return [
             [['customer_id'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
             [['firstname', 'lastname', 'company', 'street', 'city', 'province', 'country_code', 'phone1', 'phone2'], 'string', 'max' => 255],
-            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
         ];
     }
 
@@ -73,25 +86,17 @@ class Address extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCustomer()
+    public function getCustomers()
     {
-        return $this->hasOne(Customer::class, ['id' => 'customer_id']);
-    }
-
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getOrderInnvoiceAddresses()
-    {
-        return $this->hasMany(Order::class, ['invoice_address_id' => 'id']);
+        return $this->hasMany(EshopCustomer::className(), ['address_id' => 'id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getOrdersShippingAddresses()
+    public function getOrders()
     {
-        return $this->hasMany(Order::class, ['shipping_address_id' => 'id']);
+        return $this->hasMany(EshopOrder::className(), ['invoice_address_id' => 'id']);
     }
+
 }

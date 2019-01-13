@@ -3,6 +3,8 @@
 namespace kmergen\eshop\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "eshop_payment".
@@ -28,6 +30,19 @@ class Payment extends \yii\db\ActiveRecord
     }
 
     /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::class,
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function rules()
@@ -35,7 +50,6 @@ class Payment extends \yii\db\ActiveRecord
         return [
             [['order_id'], 'required'],
             [['order_id'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
             [['transaction_id', 'status', 'payment_method'], 'string', 'max' => 64],
             [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::className(), 'targetAttribute' => ['order_id' => 'id']],
         ];

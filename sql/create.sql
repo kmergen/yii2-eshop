@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS `eshop_address` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`customer_id` INT(11) NOT NULL DEFAULT '0',
 	`firstname` VARCHAR(255) NULL DEFAULT NULL,
 	`lastname` VARCHAR(255) NULL DEFAULT NULL,
 	`company` VARCHAR(255) NULL DEFAULT NULL,
@@ -12,13 +11,29 @@ CREATE TABLE IF NOT EXISTS `eshop_address` (
 	`phone2` VARCHAR(255) NULL DEFAULT NULL,
 	`created_at` DATETIME NOT NULL,
 	`updated_at` DATETIME NOT NULL,
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;
+
+CREATE TABLE IF NOT EXISTS `eshop_customer` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`address_id` INT(11) NOT NULL,
+	`email` VARCHAR(255) NOT NULL,
+	`user_id` INT(11) NULL DEFAULT NULL COMMENT 'The user id from the yii application',
+	`birthday` DATE NULL DEFAULT NULL,
+	`gender` VARCHAR(1) NULL DEFAULT 'u',
+	`created_at` DATETIME NOT NULL,
+	`updated_at` DATETIME NOT NULL,
 	PRIMARY KEY (`id`),
-	INDEX `FK__user` (`customer_id`),
-	CONSTRAINT `FK__customer` FOREIGN KEY (`customer_id`) REFERENCES `eshop_customer` (`id`)
+	UNIQUE INDEX `email` (`email`),
+	INDEX `FK_customer_eshop_address` (`address_id`),
+	INDEX `user_id` (`user_id`),
+	CONSTRAINT `FK_customer_eshop_address` FOREIGN KEY (`address_id`) REFERENCES `eshop_address` (`id`)
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
-
 
 CREATE TABLE IF NOT EXISTS `eshop_article_category` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -100,28 +115,10 @@ CREATE TABLE IF NOT EXISTS `eshop_payment` (
 	`payment_method` VARCHAR(64) NOT NULL DEFAULT '',
 	`created_at` DATETIME NOT NULL,
 	`updated_at` DATETIME NOT NULL,
+	`data` BLOB NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `FK_eshop_payment_eshop_order` (`order_id`),
 	CONSTRAINT `FK_eshop_payment_eshop_order` FOREIGN KEY (`order_id`) REFERENCES `eshop_order` (`id`)
-)
-COLLATE='utf8_general_ci'
-ENGINE=InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `eshop_customer` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`address_id` INT(11) NOT NULL,
-	`email` VARCHAR(255) NOT NULL,
-	`user_id` INT(11) NULL DEFAULT NULL COMMENT 'The user id from the yii application',
-	`birthday` DATE NULL DEFAULT NULL,
-	`gender` VARCHAR(1) NULL DEFAULT 'u',
-	`created_at` DATETIME NOT NULL,
-	`updated_at` DATETIME NOT NULL,
-	PRIMARY KEY (`id`),
-	UNIQUE INDEX `email` (`email`),
-	INDEX `FK_customer_eshop_address` (`address_id`),
-	INDEX `user_id` (`user_id`),
-	CONSTRAINT `FK_customer_eshop_address` FOREIGN KEY (`address_id`) REFERENCES `eshop_address` (`id`)
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;

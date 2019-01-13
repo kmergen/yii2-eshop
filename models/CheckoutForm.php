@@ -1,8 +1,8 @@
 <?php
 
-namespace app\modules\eshop\models;
+namespace kmergen\eshop\models;
 
-use app\modules\eshop\Module;
+use kmergen\eshop\Module;
 use yii\base\Model;
 use yii\helpers\Html;
 
@@ -15,7 +15,7 @@ class CheckoutForm extends Model
 {
   public $paymentMethod;
   public $acceptAgb;
- 		
+
 	/**
 	 * Declares the validation rules.
 	 */

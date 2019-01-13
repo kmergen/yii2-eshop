@@ -1,10 +1,9 @@
 <?php
 
-namespace app\modules\eshop\helpers;
+namespace kmergen\eshop\helpers;
 
 use Yii;
-use app\modules\eshop\Module;
-use app\helpers\Helper;
+use kmergen\eshop\Module;
 use yii\helpers\Html;
 
 /**
@@ -150,18 +149,19 @@ class Cart
      * This function is normally called via ajax when we change the qty checkbox or the qty textfield
      * @return the rendered html
      */
-    public static function renderCartPane($cartContent)
+    public static function renderCartPane()
     {
+        $cartContent = static::getCartContent();
         $items = $cartContent['items'];
         $total = $cartContent['total'];
 
         $header = '<table class="tbl-cart-pane">';
         $header.='<table class="tbl-cart-pane">';
         $header.='<thead><tr>';
-        $header.='<th>' . Module::t('Quantity') . '</th>';
-        $header.='<th>' . Module::t('ArticleOld') . '</th>';
-        $header.='<th>' . Module::t('Price') . '</th>';
-        $header.='<th>' . Module::t('Price') . '</th>';
+        $header.='<th>' . Yii::t('eshop', 'Quantity') . '</th>';
+        $header.='<th>' . Yii::t('eshop', 'ArticleOld') . '</th>';
+        $header.='<th>' . Yii::t('eshop', 'Price') . '</th>';
+        $header.='<th>' . Yii::t('eshop', 'Price') . '</th>';
         $header.='</tr></thead>';
 
         $body = '<tbody>';

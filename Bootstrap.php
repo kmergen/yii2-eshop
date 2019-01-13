@@ -1,22 +1,16 @@
 <?php
-/*
- * This file is part of the yii2-media project.
- *
- * (c) Yii2-media project <http://github.com/kmergen/yii2-media/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace kmergen\eshop;
 
+use Yii;
+use yii\authclient\Collection;
 use yii\base\BootstrapInterface;
 use yii\i18n\PhpMessageSource;
 
 /**
- * Bootstrap for eshop module
+ * Bootstrap class registers module and log component
  *
- * @author Klaus Mergen <kmergenweb@gmail.com>
+ * @author Dmitry Erofeev <dmeroff@gmail.com>
  */
 class Bootstrap implements BootstrapInterface
 {
@@ -24,15 +18,18 @@ class Bootstrap implements BootstrapInterface
     /** @inheritdoc */
     public function bootstrap($app)
     {
+        /** @var Module $module */
+        /** @var \yii\db\ActiveRecord $modelName */
         if ($app->hasModule('eshop') && ($module = $app->getModule('eshop')) instanceof Module) {
 
-            $app->get('i18n')->translations['eshop*'] = [
-                'class' => PhpMessageSource::class,
-                'basePath' => __DIR__ . '/messages',
-            ];
-        }
+            // Set the log targets
+//            $app->getLog()->targets[] = [
+//                'class' => 'yii\log\FileTarget',
+//                'categories' => ['paypal'],
+//                'logFile' => '@frontend/runtime/logs/eshop.log',
+//            ];
 
-        $app->getFormatter()->numberFormatterSymbols = [\NumberFormatter::CURRENCY_SYMBOL => '€'];
+        }
     }
 
 }

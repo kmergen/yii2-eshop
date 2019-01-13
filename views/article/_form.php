@@ -13,7 +13,9 @@ use kmergen\media\widgets\dropzone\Dropzone;
 
 <div class="article-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+        'layout' => 'horizontal'
+    ]); ?>
 
     <?= $form->field($model, 'sku')->textInput(['maxlength' => true]) ?>
 
@@ -25,35 +27,39 @@ use kmergen\media\widgets\dropzone\Dropzone;
 
     <?= $form->field($model, 'sell_price')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'default_qty')->dropDownList(array_combine(range(1,20),range(1,20))) ?>
+    <?= $form->field($model, 'default_qty')->dropDownList(array_combine(range(1, 20), range(1, 20))) ?>
 
     <?= $form->field($model, 'active')->dropDownList(['0' => Yii::t('eshop', 'No'), '1' => Yii::t('eshop', 'Yes')]) ?>
 
-    <div>
-        <?= Dropzone::widget([
-            'model' => $model,
-            'languages' => Yii::$app->language,
-            'thumbStyle' => 'medium',
-            'options' => [
-                'url' => '/media/dropzone/upload',
-                'acceptedFiles' => '.png,.jpg,.gif,.jpeg',
-                'resizeWidth' => 1600,
-                'createImageThumbnails' => true,
-                'autoProcessQueue' => true,
-                'maxFiles' => 5,
-                'dictMaxFilesExceeded' => 'Die maximale Anzahl von 5 Bildern ist erreicht.',
-                'dictCancelUpload' => '',
-                'dictDefaultMessage' => '',
-                'params' => [
-                    'targetUrl' => 'images/eshop/article'
-                ]
-            ],
-        ]);
-        ?>
+    <div class="row">
+        <label class="col-md-2 col-form-label">
+            Bilder
+        </label>
+        <div class="col-md-10">
+            <?= Dropzone::widget([
+                'model' => $model,
+                'thumbStyle' => 'medium',
+                'pluginOptions' => [
+                    'url' => '/media/dropzone/upload',
+                    'acceptedFiles' => '.png,.jpg,.gif,.jpeg',
+                    'resizeWidth' => 1600,
+                    'createImageThumbnails' => true,
+                    'autoProcessQueue' => true,
+                    'maxFiles' => 10,
+                    'dictCancelUpload' => '',
+                    'dictDefaultMessage' => '',
+                    'params' => [
+                        'targetUrl' => 'images/eshop/article'
+                    ]
+                ],
+            ]);
+            ?>
+        </div>
     </div>
-
-    <div class="form-group">
-        <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>
+    <div class="form-group row">
+        <div class="col-md-10 offset-md-2">
+            <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>
+        </div>
     </div>
 
     <?php ActiveForm::end(); ?>

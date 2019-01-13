@@ -1,9 +1,9 @@
 <?php
 
-namespace app\modules\eshop\components;
+namespace kmergen\eshop\components;
 
 use yii\base\Component;
-use app\modules\eshop\models\Order;
+use kmergen\eshop\models\Order;
 
 /**
  * The Novalnet Paygate.
@@ -39,7 +39,7 @@ class Paygate extends Component
 
     public function saveTid($payment_method)
     {
-        //We save the tid 
+        //We save the tid
 
         $affected = \Yii::$app->db->createCommand()->insert('eshop_payment_status', [
                 'tid' => $this->tid,
