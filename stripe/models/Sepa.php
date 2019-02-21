@@ -23,7 +23,7 @@ class Sepa extends Model
 	{
 		return [
 			// name, email, subject and body are required
-			[['bankaccountOwner', 'email'], 'required'],
+			[['bankaccountOwner', 'email'], 'required', 'message' => Yii::t('eshop', 'Please enter the {attribute} here ')],
 			['email', 'email'],
 		];
 	}

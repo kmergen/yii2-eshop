@@ -20,7 +20,6 @@ class PaypalRest extends Model
 	public function rules()
 	{
 		return [
-			// name, email, subject and body are required
 			['text', 'safe'],
 		];
 	}

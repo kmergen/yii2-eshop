@@ -6,6 +6,7 @@ use Yii;
 use yii\i18n\PhpMessageSource;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 class Module extends \yii\base\Module
 {
@@ -25,7 +26,7 @@ class Module extends \yii\base\Module
             'paypal_rest' => [
                 'modelClass' => 'kmergen\eshop\paypal\models\PaypalRest',
                 'label' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
-                'pane' => '@kmergen/eshop/paypal/views/rest_pane',
+                'paneurl' => Url::to(['/eshop/payment/paypal-rest-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\paypal\PaygatePaypalRest',
                     'clientId' => 'AQIH9zYY-IqXG40tHZHq8VXwf4SMP3WhKubahnPxM-_-aBWcWVvVPGVWDroxWMNZNdUI5A7JQIgkui8z',
@@ -40,8 +41,8 @@ class Module extends \yii\base\Module
             ],
             'stripe_card' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
-                'label' => 'Credit Card '. Html::img('@web/themes/basic/img/creditcard_banner_h30.png'),
-                'pane' => '@kmergen/eshop/stripe/views/card_pane',
+                'label' => 'Credit Card '. Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
+                'paneurl' => Url::to(['/eshop/payment/stripe-card-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\PaygateStripe',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',
@@ -51,7 +52,7 @@ class Module extends \yii\base\Module
             'stripe_sepa' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Sepa',
                 'label' => 'Lastschrift ' . Html::img('@web/themes/basic/img/sepa_grey_h12.png'),
-                'pane' => '@kmergen/eshop/stripe/views/sepa_pane',
+                'paneurl' => Url::to(['/eshop/payment/stripe-sepa-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\PaygateStripe',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',

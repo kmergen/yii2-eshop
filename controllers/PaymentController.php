@@ -8,6 +8,7 @@ use kmergen\eshop\models\PaymentSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\Html;
 
 /**
  * PaymentController implements the CRUD actions for Payment model.
@@ -27,6 +28,73 @@ class PaymentController extends Controller
                 ],
             ],
         ];
+    }
+
+    /**
+     * Render the paypal rest pane and returns it via ajax.
+     * @return string
+     */
+    public function actionPaypalRestPane()
+    {
+       $form = new \yii\bootstrap4\ActiveForm();
+       $form->enableClientScript = false;
+
+       $data = [];
+       $data['html'] = $this->renderAjax('@kmergen/eshop/paypal/views/rest_pane');
+       $data['errorMessages'] = [];
+
+       return $this->asJson($data);
+    }
+
+    /**
+     * Render the stripe card pane and returns it via ajax.
+     * @return string
+     */
+    public function actionStripeCardPane()
+    {
+        $form = new \yii\bootstrap4\ActiveForm();
+        $form->enableClientScript = false;
+
+        $data = [];
+        $data['html'] = $this->renderAjax('@kmergen/eshop/stripe/views/card_pane', [
+            'model' => new \kmergen\eshop\stripe\models\Card(),
+            'form' => $form,
+        ]);
+        $data['errorMessages'] = [];
+        return $this->asJson($data);
+    }
+
+    /**
+     * Render the stripe sepa pane and returns it via ajax.
+     * @return string
+     */
+    public function actionStripeSepaPane()
+    {
+       $form = new \yii\bootstrap4\ActiveForm();
+       $form->enableClientScript = false;
+       $form->fieldConfig =  function ($model, $attribute) {
+        $data['template'] = "{beginWrapper}\n{label}\n{input}\n{endWrapper}{hint}\n{error}\n";
+        $data['wrapperOptions'] = ['class' => empty(Html::getAttributeValue($model, $attribute)) ? 'input-group inplace-group' : 'input-group inplace-group has-value'];
+        return $data;
+    };
+       $model = new \kmergen\eshop\stripe\models\Sepa();
+       $data = [];
+       $data['html'] = $this->renderAjax('@kmergen/eshop/stripe/views/sepa_pane', [
+            'model' => $model,
+            'form' => $form,
+        ]);
+
+        $data['errorMessages'] = [
+            'bankaccountOwner' => [
+                'required' => Yii::t('eshop', 'Please enter here the {0}', $model->getAttributeLabel('bankaccountOwner'))
+            ],
+            'email' => [
+                'required' => Yii::t('eshop', 'Please enter here your email address'),
+                'email' => Yii::t('eshop', 'The entered email address does not seem to be correct')
+            ],
+        ];
+
+        return $this->asJson($data);
     }
 
     /**
