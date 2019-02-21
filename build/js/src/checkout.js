@@ -18,10 +18,9 @@ KMeshop.checkout = function ($) {
         active: true,
         CHECKOUT_FORM_ID: 'checkoutForm',
         PAYMENT_WALL_ID: 'paymentWall',
-        PAY_BUTTON_ID: 'btnPay',
         CANCEL_BUTTON_ID: 'btnCancel',
-        CLICKED_BUTTON_ID: 'clickedButton',
-        PAYMENT_METHOD_ID: 'adcheckoutform-paymentmethod',
+        CHECKOUT_CANCELED_ID: 'checkoutform-checkoutcanceled',
+        PAYMENT_METHOD_ID: 'checkoutform-paymentmethod',
         PANE_CONTENT_SELECTOR: '.card-body'
     }
 
@@ -88,45 +87,39 @@ KMeshop.checkout = function ($) {
 
     function initEvents() {
         /*eslint-disable */
-        $(checkoutForm).on('afterValidate', function (event, messages, errorAttributes) {
-            if (errorAttributes.length) {
-                // There are errors on client validation
-                return false;
-            } else {
-                /* No errors on client validation
-                 Call to paymentmethod specific submit callbacks */
-                paymentMethodsCallbacks(getPaymentMethod(), 'submit')
 
-            }
-        });
+        // $(checkoutForm).on('submit', function (event) {
+        //     event.preventDefault();
+        //     const $form = $(this)
+        //     let $data = $form.data("yiiActiveForm");
+        //     $.each($data.attributes, function() {
+        //         this.status = 3;
+        //     });
+        //     $form.yiiActiveForm('validate')
+        // })
 
         /* This function is called if client validation is successful.
-           But we always return false because the payment specific submit callbacks
+           But we always return false because the [[paymentMethodsCallbacks()]]
            will call [[checkoutFinal]] to submit the form. */
         $(checkoutForm).on('beforeSubmit', function (event) {
+            paymentMethodsCallbacks(getPaymentMethod(), 'submit')
             return false;
         });
 
         /*eslint-enable */
         $(paymentWall).on('show.bs.collapse', function (event) {
             var el = $(event.target);
-
-            // el.children('.card-body').load(el.data('url'));
-            //addFields(form);
             $.ajax(el.data('paneurl'))
                 .done(function (data) {
                     el.children(settings.PANE_CONTENT_SELECTOR).html(data.html)
                     let paymentmethod = el.data('paymentmethod');
                     setPaymentMethod(paymentmethod)
-                    $(document.getElementById(settings.PAYMENT_METHOD_ID)).removeClass('is-invalid');
                     paymentMethodsCallbacks(paymentmethod, 'add', data)
-                    $(checkoutForm).yiiActiveForm('validateAttribute', 'adcheckoutform-paymentmethod');
+                    $(checkoutForm).yiiActiveForm('validateAttribute', 'checkoutform-paymentmethod');
                 })
                 .fail(function () {
                     //  alert( 'error' );
                 })
-
-
         })
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
@@ -139,12 +132,8 @@ KMeshop.checkout = function ($) {
         })
 
         $(document.getElementById(settings.CANCEL_BUTTON_ID)).on('click', function () {
-            document.getElementById(settings.CLICKED_BUTTON_ID).value = 'Cancel';
+            document.getElementById(settings.CHECKOUT_CANCELED_ID).value = '1';
             checkoutForm.submit();
-        });
-
-        $(settings.PAY_BUTTON_ID).on('click', function () {
-            document.getElementById(settings.CLICKED_BUTTON_ID).value = 'Pay';
         });
     }
 
@@ -206,6 +195,20 @@ KMeshop.checkout = function ($) {
         stripeCard.unmount()
 
         return;
+    }
+
+    function submitStripeCard() {
+        stripe.createToken(stripeCard).then(function (result) {
+            const formGroup = document.getElementById('stripeCardFormGroup')
+            const errorElement = document.getElementById('stripeCardErrors');
+            if (result.error) {
+                formGroup.classList.add('is-invalid');
+            } else {
+                // Create a token form element.
+                stripeTokenHandler(result.token);
+                checkoutFinal();
+            }
+        });
     }
 
     function addStripeSepa() {
@@ -278,21 +281,6 @@ KMeshop.checkout = function ($) {
         stripeIban.unmount()
     }
 
-    /* Add client validation to Sepa model fields bankaccountOwner */
-    function addSepaValidation(errorMessages) {
-        $(checkoutForm).yiiActiveForm('add', {
-            id: 'sepa-bankaccountowner',
-            name: 'Sepa[bankaccountOwner]',
-            container: '.field-sepa-bankaccountowner',
-            input: '#sepa-bankaccountowner',
-            error: '.invalid-feedback',
-            validateOnBlur: false,
-            validate: function (attribute, value, messages, deferred, $form) {
-                yii.validation.required(value, messages, {message: errorMessages.bankaccountOwner.required});
-            }
-        })
-    }
-
     function submitStripeSepa(event) {
         var sourceData = {
             type: 'sepa_debit',
@@ -326,41 +314,41 @@ KMeshop.checkout = function ($) {
         });
     }
 
-    function submitStripeCard() {
-        stripe.createToken(stripeCard).then(function (result) {
-            const formGroup = document.getElementById('stripeCardFormGroup')
-            const errorElement = document.getElementById('stripeCardErrors');
-            if (result.error) {
-                formGroup.classList.add('is-invalid');
-            } else {
-                // Create a token form element.
-                stripeTokenHandler(result.token);
-                checkoutFinal();
+    /* Add client validation to Sepa model fields bankaccountOwner */
+    function addSepaValidation(errorMessages) {
+        $(checkoutForm).yiiActiveForm('add', {
+            id: 'sepa-bankaccountowner',
+            name: 'Sepa[bankaccountOwner]',
+            container: '.field-sepa-bankaccountowner',
+            input: '#sepa-bankaccountowner',
+            error: '.invalid-feedback',
+            validateOnBlur: false,
+            validate: function (attribute, value, messages, deferred, $form) {
+                yii.validation.required(value, messages, {message: errorMessages.bankaccountOwner.required});
             }
-        });
-    }
-
-    function stripeTokenHandler(token) {
-        // Insert the token ID into the form so it gets submitted to the server
-        const hiddenInput = document.createElement('input');
-        hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'stripeToken');
-        hiddenInput.setAttribute('value', token.id);
-        checkoutForm.appendChild(hiddenInput);
-    }
-
-    function stripeSourceHandler(source) {
-        // Insert the Source ID into the form so it gets submitted to the server.
-        var hiddenInput = document.createElement('input');
-        hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'stripeSource');
-        hiddenInput.setAttribute('value', source.id);
-        checkoutForm.appendChild(hiddenInput);
+        })
     }
 
     /* Remove Sepa model fields from client Validation */
     function removeSepaValidation() {
         $(checkoutForm).yiiActiveForm('remove', 'sepa-bankaccountowner')
+    }
+
+    /* Insert the token ID into the form so it gets submitted to the server */
+    function stripeTokenHandler(token) {
+        let hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeToken');
+        hiddenInput.setAttribute('value', token.id);
+        checkoutForm.appendChild(hiddenInput);
+    }
+    /* Insert the Source ID into the form so it gets submitted to the server. */
+    function stripeSourceHandler(source) {
+        let hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeSource');
+        hiddenInput.setAttribute('value', source.id);
+        checkoutForm.appendChild(hiddenInput);
     }
 
     /*eslint-enable */
