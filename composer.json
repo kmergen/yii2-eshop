@@ -20,12 +20,12 @@
     "require": {
         "yiisoft/yii2": "~2.0.14",
         "yiisoft/yii2-bootstrap4": "~1.0.0",
+        "paypal/rest-api-sdk-php":"*",
         "kmergen/yii2-media": "*",
         "kmergen/yii2-widgets": "~2.0",
         "ext-curl": "*",
         "ext-json": "*",
         "braintree/braintree_php" : "3.35.0",
-        "paypal/rest-api-sdk-php":"*",
         "stripe/stripe-php": "*"
     }
 }
