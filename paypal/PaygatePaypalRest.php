@@ -198,11 +198,4 @@ class PaygatePaypalRest extends BaseObject
         }
         return $payment;
     }
-
-    public function getPane()
-    {
-        $a = 4;
-        return 'Paypal Rest';
-    }
-
 }
