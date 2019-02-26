@@ -48,10 +48,11 @@ class Payment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['order_id'], 'required'],
+            [['order_id', 'payment_method', 'status'], 'required'],
             [['order_id'], 'integer'],
             [['transaction_id', 'status', 'payment_method'], 'string', 'max' => 64],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::className(), 'targetAttribute' => ['order_id' => 'id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
+            [['data'], 'safe'],
         ];
     }
 

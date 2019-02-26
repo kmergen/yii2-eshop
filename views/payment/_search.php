@@ -17,8 +17,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'id') ?>
 
-    <?= $form->field($model, 'order_id') ?>
-
     <?= $form->field($model, 'transaction_id') ?>
 
     <?= $form->field($model, 'status') ?>

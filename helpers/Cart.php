@@ -4,12 +4,14 @@ namespace kmergen\eshop\helpers;
 
 use Yii;
 use kmergen\eshop\Module;
+use yii\base\BaseObject;
 use yii\helpers\Html;
+use kmergen\eshop\models\Order;
 
 /**
  * Cart helper Class. This class handles  a cart for different webshops arround the application.
  */
-class Cart
+class Cart extends BaseObject
 {
     const CART_ID = 'cart';
 
@@ -90,13 +92,34 @@ class Cart
     }
 
     /**
-     * Returns the total price from the items in cart
+     * Returns the total price from the total of an order or if no order exist from the cart items.
+     * If the cart is empty or not exists it returns 0.
+     * @return mixed float integer
      */
-    public static function getTotalPrice()
+    public static function getTotal()
     {
         $total = 0;
-        foreach ($items as $v) {
-            $total += ($v['price'] * $v['qty']);
+
+        if (empty($_SESSION[self::CART_ID])) {
+            return $total;
+        } else {
+            $cart = $_SESSION[self::CART_ID];
+        }
+
+        if (($orderId = static::getOrderId()) !== null) {
+            $total =  Yii::$app->db->createCommand('SELECT total FROM eshop_order WHERE id=:id', [':id' => $orderId])->queryScalar();
+        } else {
+            $article_ids = implode(',', array_keys($cart));
+            if (empty($article_ids)) {
+                return $total;
+            }
+            $rows = Yii::$app->db->createCommand("SELECT * FROM eshop_article WHERE id IN($article_ids)")->queryAll();
+            foreach ($rows as $row) {
+                $row['qty'] = $cart[$row['id']];
+                $row['total_price'] = $row['qty'] * $row['sell_price'];
+                $items[] = $row;
+                $total+=$row['total_price'];
+            }
         }
         return $total;
     }
@@ -118,31 +141,59 @@ class Cart
     }
 
     /**
+     * Return the orderId for the cart or null if no exists
+     * @return mixed
+     */
+    public static function getOrderId()
+    {
+        return Yii::$app->session->get('orderId');
+    }
+
+    /**
+     * Set the orderId for the cart
+     * @return void
+     */
+    public static function setOrderId($id)
+    {
+        return Yii::$app->session->set('orderId', $id);
+    }
+
+    /**
      * Return the items in a shopping cart.
-     *
      */
     public static function getCartContent()
     {
 
         if (empty($_SESSION[self::CART_ID])) {
             return [];
-        }else {
+        } else {
             $cart = $_SESSION[self::CART_ID];
         }
 
 
         $article_ids = implode(',', array_keys($cart));
-        $sql = "SELECT * FROM eshop_article WHERE id IN($article_ids)";
+
+        if (empty($article_ids)) {
+            return [];
+        }
+
+
+        $sql = "SELECT article.*, article_category.shipping
+  FROM eshop_article AS article INNER JOIN eshop_article_category AS article_category ON (article.category_id = article_category.id) WHERE article.id IN($article_ids)";
         $rows = Yii::$app->db->createCommand($sql)->queryAll();
         $items = [];
         $total = 0;
+        $shipping = false;
         foreach ($rows as $row) {
             $row['qty'] = $cart[$row['id']];
             $row['total_price'] = $row['qty'] * $row['sell_price'];
             $items[] = $row;
             $total+=$row['total_price'];
+            if ($row['shipping']) {
+                $shipping = true;
+            }
         }
-        return ['items' => $items, 'total' => $total];
+        return ['items' => $items, 'total' => $total, 'shipping' => $shipping];
     }
 
     /**

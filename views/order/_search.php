@@ -25,7 +25,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'invoice_address_id') ?>
 
-    <?php // echo $form->field($model, 'shipping_address_id') ?>
+    <?php // echo $form->field($model, 'shipping_id') ?>
 
     <?php // echo $form->field($model, 'data') ?>
 

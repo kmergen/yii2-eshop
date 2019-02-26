@@ -2,19 +2,17 @@
 
 namespace kmergen\eshop\models;
 
-use kmergen\eshop\Module;
+use Yii;
 use yii\base\Model;
-use yii\helpers\Html;
 
 /**
- * Checkout class.
- * Checkout is the data structure for keeping
- * checkout form data. It is used by the index action of 'CheckoutController'.
+ * Ad checkout form model.
  */
 class CheckoutForm extends Model
 {
   public $paymentMethod;
-  public $acceptAgb;
+
+  public $checkoutCanceled;
 
 	/**
 	 * Declares the validation rules.
@@ -22,22 +20,18 @@ class CheckoutForm extends Model
 	public function rules()
 	{
 		return [
-			// name, email, subject and body are required
-			['paymentMethod', 'required', 'message'=>'Wählen Sie bitte eine Zahlungsweise aus.'],
-			['acceptAgb', 'compare', 'compareValue'=>1, 'message'=>'Sie müssen unseren AGBs zustimmen.'],
+			['paymentMethod', 'required', 'message'=> Yii::t('app', 'Please choose a payment method')],
+            ['checkoutCanceled', 'safe']
 		];
 	}
 
 	/**
-	 * Declares customized attribute labels.
-	 * If not declared here, an attribute would have a label that is
-	 * the same as its name with the first letter in upper case.
+	 * @inheritdoc
 	 */
 	public function attributeLabels()
 	{
 		return [
-			'paymentMethod'=>Module::t('Payment Method'),
-		  'acceptAgb'=>'Ich akzeptiere die '. Html::a('Allgemeinen Geshäftsbedingungen', ['/site/agb'], ['target'=>'_blank']) .' von hundekauf.de',
+			'paymentMethod'=>Yii::t('app', 'Payment Method'),
 		];
 	}
 }

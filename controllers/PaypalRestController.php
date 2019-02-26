@@ -9,14 +9,35 @@ use kmergen\eshop\models\PaymentSearch;
 use yii\web\Controller;
 use yii\base\Exception;
 use yii\base\Event;
+use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * PaypalRestController implements the actions for Paypal Plus via REST API
+ * PaypalRestController implements the actions for Paypal via REST API
  */
 class PaypalRestController extends Controller
 {
+    /**
+     * Render the paypal rest pane and returns it via ajax.
+     * @return string
+     */
+    public function actionPane()
+    {
+        if (!Yii::$app->getRequest()->getIsAjax()) {
+            return MethodNotAllowedHttpException();
+        }
+        $form = new \yii\bootstrap4\ActiveForm();
+        $form->enableClientScript = false;
+
+        $data = [];
+        $data['html'] = $this->renderAjax('@kmergen/eshop/paypal/views/rest_pane');
+        $data['errorMessages'] = [];
+
+        return $this->asJson($data);
+    }
+
+
     /**
      * A user is redirected to this action after after successfully initiate the express checkout.
      * @return mixed
@@ -27,7 +48,7 @@ class PaypalRestController extends Controller
         $paymentId = $_REQUEST['paymentId'];
         $token = $_REQUEST['token'];
         $payerId = $_REQUEST['PayerID'];
-        $pp = Yii::createObject(Yii::$app->getModule('eshop')->paymentMethods['paypal_rest']['paygate']);
+        $pp = Yii::createObject($this->module->paymentMethods['paypal_rest']['paygate']);
 
         $payment = $pp->doPayment();
 
@@ -66,7 +87,7 @@ class PaypalRestController extends Controller
 //        }
 
 
-        return $this->redirect(['/anzeigen/bearbeiten', 'id' => '69']);
+        return $this->redirect(['/anzeigen/bearbeiten', 'id' => '73']);
     }
 
     /**

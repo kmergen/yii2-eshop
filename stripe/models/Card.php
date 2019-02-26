@@ -5,13 +5,14 @@ namespace kmergen\eshop\stripe\models;
 use kmergen\eshop\Module;
 use yii\base\Model;
 use yii\helpers\Html;
-
+use Yii;
 /**
  * Stripe Card model.
  * The underlying model for the card pane.
  */
 class Card extends Model
 {
+    public $cardHolderName;
 
 	/**
 	 * Declares the validation rules.
@@ -19,7 +20,8 @@ class Card extends Model
 	public function rules()
 	{
 		return [
-
+            ['cardHolderName', 'required'],
+            ['cardHolderName', 'string']
 		];
 	}
 
@@ -31,7 +33,7 @@ class Card extends Model
 	public function attributeLabels()
 	{
 		return [
-
+            'cardHolderName' => Yii::t('eshop', 'Card Holder Name')
 		];
 	}
 }

@@ -24,13 +24,14 @@ use PayPal\Api\PaymentExecution;
 use PayPal\Exception\PayPalConnectionException;
 use PayPal\Auth\OAuthTokenCredential;
 use PayPal\Rest\ApiContext;
-use yii\base\BaseObject;
+use yii\base\Component;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 use yii\base\Exception;
 use Yii;
+use kmergen\eshop\components\PaymentEvent;
 
-class PaygatePaypalRest extends BaseObject
+class PaygatePaypalRest extends Component
 {
     public $clientId;
     public $clientSecret;
@@ -41,6 +42,8 @@ class PaygatePaypalRest extends BaseObject
     public $cancelUrl;
 
     private $_apiContext;
+
+    const EVENT_PAYMENT_DONE = 'payment_done';
 
     // API Context
     // Use an ApiContext object to authenticate API calls.
@@ -189,6 +192,9 @@ class PaygatePaypalRest extends BaseObject
         try {
             $payment->execute($execution, $this->_apiContext);
             $paymentCheck = Payment::get($paymentId, $this->_apiContext);
+            $event = new PaymentEvent();
+            $event->paymentInfo = ['paymentProvider' => 'stripe', 'orderId' => 7777];
+            $this->trigger(self::EVENT_PAYMENT_DONE, $event);
         } catch (\Exception $ex) {
             Yii::error([
                 'Error Message' => $ex->getMessage(),

@@ -1,14 +1,21 @@
 /* global jQuery */
 /* global KMeshop */
+/* global Stripe */
 // Checkout Javascript
 
 KMeshop.checkout = function ($) {
+
+
     // Public goes here
     const pub = {
         init: function (options) {
             $.extend(settings, defaults, options)
             checkoutForm = document.getElementById(settings.CHECKOUT_FORM_ID);
             paymentWall = document.getElementById(settings.PAYMENT_WALL_ID);
+            stripe = Stripe(settings.stripeId, {
+                betas: ['payment_intent_beta_3']
+            });
+            elements = stripe.elements()
             initEvents();
         }
     }
@@ -21,16 +28,18 @@ KMeshop.checkout = function ($) {
         CANCEL_BUTTON_ID: 'btnCancel',
         CHECKOUT_CANCELED_ID: 'checkoutform-checkoutcanceled',
         PAYMENT_METHOD_ID: 'checkoutform-paymentmethod',
-        PANE_CONTENT_SELECTOR: '.card-body'
+        PANE_CONTENT_SELECTOR: '.card-body',
+        stripeId: undefined
     }
 
     let settings = {}
-    let checkoutForm = undefined;
-    let paymentWall = undefined;
+    let checkoutForm = undefined
+    let paymentWall = undefined
 
-    // global Stripe variables
+    let stripe = undefined
+    let elements = undefined
     let stripeIban = undefined
-    let stripeCard = undefined
+    let stripeCardElement = undefined
 
     /*eslint-disable */
     function paymentMethodsCallbacks(paymentMethod, action, data) {
@@ -109,8 +118,10 @@ KMeshop.checkout = function ($) {
         /*eslint-enable */
         $(paymentWall).on('show.bs.collapse', function (event) {
             var el = $(event.target);
+            el.find('.spinner-border').removeClass('d-none')
             $.ajax(el.data('paneurl'))
                 .done(function (data) {
+                    el.find('.spinner-border').addClass('d-none')
                     el.children(settings.PANE_CONTENT_SELECTOR).html(data.html)
                     let paymentmethod = el.data('paymentmethod');
                     setPaymentMethod(paymentmethod)
@@ -153,6 +164,10 @@ KMeshop.checkout = function ($) {
         checkoutFinal();
     }
 
+    /**
+     * Add stripe card element by using stripe PaymentIntents
+     * @see https://stripe.com/docs/payments/payment-intents
+     */
     function addStripeCard() {
         // Custom styling can be passed to options when creating an Element.
         var style = {
@@ -164,13 +179,35 @@ KMeshop.checkout = function ($) {
         };
 
         // Create an instance of the card Element.
-        if (stripeCard === undefined) {
-            stripeCard = elements.create('card', {style: style})
+        if (stripeCardElement === undefined) {
+            stripeCardElement = elements.create('card', {style: style})
         }
         // Add an instance of the card Element into the `card-element` <div>.
-        stripeCard.mount('#stripeCardElement');
+        stripeCardElement.mount('#stripeCardElement');
 
-        stripeCard.addEventListener('change', function (event) {
+        const cardButton = document.getElementById('stripeCardButton');
+        cardButton.addEventListener('click', function(ev) {
+            ev.preventDefault();
+            const cardholderName = document.getElementById('card-cardholdername');
+            const clientSecret = cardButton.dataset.secret;
+            stripe.handleCardPayment(
+                clientSecret, stripeCardElement, {
+                    source_data: {
+                        owner: {name: cardholderName.value}
+                    }
+                }
+            ).then(function(result) {
+                if (result.error) {
+                    let error = 'Haha'
+                    // Display error.message in your UI.
+                } else {
+                    let success = 'Hhhhh'
+                    // The payment has succeeded. Display a success message.
+                }
+            });
+        });
+
+        stripeCardElement.addEventListener('change', function (event) {
             const formGroup = document.getElementById('stripeCardFormGroup')
             const errorElement = document.getElementById('stripeCardErrors');
             if (event.error) {
@@ -186,19 +223,18 @@ KMeshop.checkout = function ($) {
                     formGroup.classList.add('is-valid');
                 }
             }
-            //return;
         });
     }
 
+    /**
+     * Unmount stripe card element
+     */
     function removeStripeCard() {
-        // var card = settings.card;
-        stripeCard.unmount()
-
-        return;
+        stripeCardElement.unmount()
     }
 
     function submitStripeCard() {
-        stripe.createToken(stripeCard).then(function (result) {
+        stripe.createToken(stripeCardElement).then(function (result) {
             const formGroup = document.getElementById('stripeCardFormGroup')
             const errorElement = document.getElementById('stripeCardErrors');
             if (result.error) {
@@ -211,6 +247,9 @@ KMeshop.checkout = function ($) {
         });
     }
 
+    /**
+     * Create a stripe Iban element and append it to the sepa_pane
+     */
     function addStripeSepa() {
         // Custom styling can be passed to options when creating an Element.
         // (Note that this demo uses a wider set of styles than the guide below.)
@@ -277,10 +316,17 @@ KMeshop.checkout = function ($) {
         });
     }
 
+    /**
+     * Unmount Iban element
+     */
     function removeStripeSepa() {
         stripeIban.unmount()
     }
 
+    /**
+     * This function is called at form submit to create a source and the source.id
+     * hidden input
+     */
     function submitStripeSepa(event) {
         var sourceData = {
             type: 'sepa_debit',

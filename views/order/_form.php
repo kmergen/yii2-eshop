@@ -20,7 +20,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'invoice_address_id')->textInput() ?>
 
-    <?= $form->field($model, 'shipping_address_id')->textInput() ?>
+    <?= $form->field($model, 'shipping_id')->textInput() ?>
 
     <?= $form->field($model, 'data')->textarea(['rows' => 6]) ?>
 

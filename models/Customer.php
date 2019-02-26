@@ -17,7 +17,6 @@ use yii\db\Expression;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property EshopAddress $address
  * @property EshopOrder[] $eshopOrders
  */
 class Customer extends \yii\db\ActiveRecord
