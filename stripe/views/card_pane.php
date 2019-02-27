@@ -15,7 +15,7 @@ use yii\bootstrap4\ActiveForm;
         </div>
     </div>
     <div id="stripeCardErrors" class="invalid-feedback" role="alert"></div>
-    <button id="stripeCardButton" data-secret="<?= $intent->client_secret ?>">
+    <button type="button" id="stripeCardButton" data-secret="<?= $intent->client_secret ?>">
         Submit Payment
     </button>
 </div>

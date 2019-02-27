@@ -1,0 +1,45 @@
+{
+    "name": "yii2-eshop",
+    "version": "1.0.0",
+    "description": "Yii2 shop system module",
+    "main": "index.js",
+    "dependencies": {
+        "babel-cli": "^6.26.0",
+        "browser-sync": "^2.26.3",
+        "clean-css-cli": "^4.2.1",
+        "node-sass": "^4.11.0"
+    },
+    "devDependencies": {
+        "babel-preset-env": "^1.7.0",
+        "eslint": "^5.13.0",
+        "nodemon": "^1.18.10",
+        "npm-run-all": "^4.1.5",
+        "uglify-js": "^3.4.9"
+    },
+    "scripts": {
+        "build": "npm-run-all --sequential css js",
+        "css": "npm-run-all --parallel css-compile --sequential css-minify",
+        "css-compile": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 build/scss/eshop.scss assets/eshop.css",
+        "css-minify": "cleancss --level 1 --output assets/eshop.min.css assets/eshop.css",
+        "js": "npm-run-all --parallel js-app --parallel js-minify",
+        "js-app": "npm-run-all --parallel js-lint js-transpile",
+        "js-transpile": "babel build/js/src -d assets",
+        "js-lint": "eslint build/js/src",
+        "js-minify": "npm-run-all --parallel js-minify-*",
+        "js-minify-eshop": "uglifyjs assets/eshop.js --compress --mangle --output assets/eshop.min.js",
+        "js-minify-checkout": "uglifyjs assets/checkout.js --compress --mangle --output assets/checkout.min.js",
+        "watch-css": "nodemon --watch build/scss -x \"npm run css-compile\"",
+        "watch-js": "nodemon --watch build/js/src -x \"npm run js-app\"",
+        "serve": "npm-run-all --parallel watch-css watch-js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kmergen/yii2-eshop.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/kmergen/yii2-eshop/issues"
+    },
+    "homepage": "https://github.com/kmergen/yii2-eshop#readme"
+}
