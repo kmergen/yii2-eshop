@@ -91,18 +91,6 @@ class CheckoutController extends Controller
         $isOrderWithShipping = $cartContent['shipping'];
         $paymentModel = null;
 
-        if (Cart::getOrderId() === null) {
-            $order = $this->createOrder($cartContent, $customer->id);
-            Cart::setOrderId($order->id);
-        } else {
-            $order = Order::find()->with('order_items')->where(['order_id' => Cart::getOrderId()]);
-        }
-
-
-        if (!$model->load($post)) {
-
-        }
-
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
             $customer->email = Yii::$app->user->getIdentity()->email;
             $customer->updateAttributes(['email']);
@@ -121,6 +109,15 @@ class CheckoutController extends Controller
             $customer->save();
             $address = new Address();
         }
+
+        if (Cart::getOrderId() === null) {
+            $order = $this->createOrder($cartContent, $customer->id);
+            Cart::setOrderId($order->id);
+        } else {
+            $order = Order::find()->with('order_items')->where(['order_id' => Cart::getOrderId()]);
+        }
+
+
 
 
         if ($model->load($post)) {
