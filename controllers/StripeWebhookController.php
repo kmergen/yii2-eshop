@@ -21,6 +21,8 @@ use yii\web\Response;
  */
 class StripeWebhookController extends Controller
 {
+    public $enableCsrfValidation = false;
+
     /**
      * {@inheritdoc}
      */
