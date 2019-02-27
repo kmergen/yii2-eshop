@@ -48,7 +48,7 @@ class StripeWebhookController extends Controller
         $event_json = json_decode($input);
 
         // Do something with $event_json
-        Yii::info('Klausi send this webhook event: ' . $event_json);
+        Yii::info($event_json);
         http_response_code(200); // PHP 5.4 or greater
     }
 
