@@ -27,7 +27,7 @@ class EshopAsset extends AssetBundle
         parent::init();
         if (YII_DEBUG) {
             $this->js = [
-                'Eshop.js'
+                'eshop.js'
             ];
             $this->css = [
                 'eshop.css'
