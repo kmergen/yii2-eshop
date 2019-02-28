@@ -21,6 +21,10 @@ use yii\web\Response;
  */
 class StripeWebhooksController extends Controller
 {
+    /**
+     * @var bool
+     * Set this to false because stripe can not send the csrf token.
+     */
     public $enableCsrfValidation = false;
 
     /**
@@ -38,7 +42,7 @@ class StripeWebhooksController extends Controller
         ];
     }
     /**
-     * Test webhooks from Stripe
+     * Stripe Webhook payment_intent.succeeded
      * @return Response with statuscode 200
      */
     public function actionPaymentIntentSucceeded()
@@ -46,10 +50,10 @@ class StripeWebhooksController extends Controller
         // Retrieve the request's body and parse it as JSON:
         $input = @file_get_contents('php://input');
         $event_json = json_decode($input);
-
         // Do something with $event_json
-        Yii::error('van der vaart');
-        http_response_code(200); // PHP 5.4 or greater
+
+        Yii::info($event_json, __METHOD__);
+        return;
     }
 
 }
