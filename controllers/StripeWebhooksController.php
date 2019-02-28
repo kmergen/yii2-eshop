@@ -19,7 +19,7 @@ use yii\web\Response;
  * StripeWebhookController implements Stripe webhook events.
  * @see https://stripe.com/docs/webhooks
  */
-class StripeWebhookController extends Controller
+class StripeWebhooksController extends Controller
 {
     public $enableCsrfValidation = false;
 
@@ -41,14 +41,14 @@ class StripeWebhookController extends Controller
      * Test webhooks from Stripe
      * @return Response with statuscode 200
      */
-    public function actionAll()
+    public function actionPaymentIntentSucceeded()
     {
         // Retrieve the request's body and parse it as JSON:
         $input = @file_get_contents('php://input');
         $event_json = json_decode($input);
 
         // Do something with $event_json
-        Yii::info($event_json);
+        Yii::error('van der vaart');
         http_response_code(200); // PHP 5.4 or greater
     }
 
