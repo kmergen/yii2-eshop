@@ -6,12 +6,15 @@ use Yii;
 use kmergen\eshop\models\Article;
 use kmergen\eshop\models\ArticleSearch;
 use yii\web\NotFoundHttpException;
+use yii\base\Event;
 
 /**
  * ArticleController implements the CRUD actions for Article model.
  */
 class ArticleController extends AdminController
 {
+
+    const EVENT_ARTICLE_SHOW = 'articleShow';
 
     /**
      * Lists all Article models.
@@ -36,6 +39,9 @@ class ArticleController extends AdminController
      */
     public function actionView($id)
     {
+        $event = new Event();
+        //Event::trigger(Article::class, self::EVENT_ARTICLE_SHOW, $event);
+        $this->trigger(self::EVENT_ARTICLE_SHOW, $event);
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);

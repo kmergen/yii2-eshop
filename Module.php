@@ -16,11 +16,23 @@ class Module extends \yii\base\Module
 
     public $currencySign = '€';
 
+    public $classEventHandler = [
+        [
+            'class' => controllers\StripeWebhooksController::class,
+            'event' => controllers\StripeWebhooksController::EVENT_STRIPE_WEBHOOK,
+            'callable' => [models\Order::class, 'handleStripeWebhooks']
+        ],
+        [
+            'class' => controllers\ArticleController::class,
+            'event' => controllers\ArticleController::EVENT_ARTICLE_SHOW,
+            'callable' => [models\Order::class, 'handleArticleShowEvent']
+        ],
+    ];
+
     public function init()
     {
         parent::init();
         $this->registerTranslations();
-
 
         $paymentMethodsDefault = [
             'paypal_rest' => [
@@ -41,7 +53,7 @@ class Module extends \yii\base\Module
             ],
             'stripe_card' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
-                'label' => 'Credit Card '. Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
+                'label' => 'Credit Card ' . Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
                 'paneurl' => Url::to(['/shop/stripe/card-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\PaygateStripe',
@@ -89,6 +101,7 @@ class Module extends \yii\base\Module
 //            ],
         ];
         $this->paymentMethods = ArrayHelper::merge($paymentMethodsDefault, $this->paymentMethods);
+        $this->registerEventHandler();
     }
 
     public function registerTranslations()
@@ -98,6 +111,13 @@ class Module extends \yii\base\Module
             'basePath' => __DIR__ . '/messages',
             'sourceLanguage' => 'en',
         ];
+    }
+
+    public function registerEventHandler()
+    {
+        foreach ($this->classEventHandler as $handler) {
+            \yii\base\Event::on($handler['class'], $handler['event'], $handler['callable']);
+        }
     }
 
 }

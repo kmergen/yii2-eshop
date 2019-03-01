@@ -121,6 +121,23 @@ class Order extends \yii\db\ActiveRecord
         $order->updateAttributes(['status' => $status]);
     }
 
+    /*
+     * Handle Stripe Webhooks Events
+     */
+    public static function handleStripeWebhooks($event)
+    {
+
+    }
+
+    /*
+     * Handle article Events
+     * Events triggered by Article controller
+     */
+    public static function handleArticleShowEvent($event)
+    {
+        $a = 4;
+    }
+
 
     /**
      * @return \yii\db\ActiveQuery

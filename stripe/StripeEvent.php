@@ -6,22 +6,23 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace kmergen\eshop\components;
+namespace kmergen\eshop\stripe;
 
 use yii\base\Event;
 
 /**
- * PaymentEvent
+ * Stripe Event
+ * All stripe events extents from this class, because we will send additional data
+ * to the event handler
  *
  * @author Klaus Mergen <kmergenweb@gmail.com>
  * @since 1.0
  *
- * This event is the base class for payment events.
  */
-class PaymentEvent extends Event
+class StripeEvent
 {
     /**
-     * @var $payment array This array contains payment information that use by the handled class e.g. [[kmergen\eshop\models\Payment]].
+     * @var The stripe data Object.
      */
-    public $payment;
+    public $stripeData;
 }
