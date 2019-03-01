@@ -19,7 +19,7 @@ use yii\base\Event;
  * @since 1.0
  *
  */
-class StripeEvent
+class StripeEvent extends Event
 {
     /**
      * @var The stripe data Object.
