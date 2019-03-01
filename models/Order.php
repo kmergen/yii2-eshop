@@ -126,7 +126,7 @@ class Order extends \yii\db\ActiveRecord
      */
     public static function handleStripeWebhooks($event)
     {
-        Yii::info('Stripe webhook mit Id ' . $event->stripeData->id . 'wurde gesendet.');
+        Yii::error('Stripe webhook mit Id ' . $event->stripeData->id . ' wurde gesendet.');
     }
 
     /*
