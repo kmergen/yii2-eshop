@@ -19,9 +19,9 @@ use kmergen\eshop\stripe\StripeEvent;
  * StripeWebhookController implements Stripe webhook events.
  * @see https://stripe.com/docs/webhooks
  */
-class StripeWebhooksController extends Controller
+class StripeWebhookController extends Controller
 {
-    const EVENT_STRIPE_WEBHOOK = 'stripeWebhook';
+    const EVENT_STRIPE_PAYMENT_INTENT = 'stripePaymentIntent';
 
     /**
      * @var bool
@@ -89,7 +89,7 @@ class StripeWebhooksController extends Controller
 
         $event = new StripeEvent();
         $event->stripeData = $intent;
-        $this->trigger(self::EVENT_STRIPE_WEBHOOK, $event);
+        $this->trigger(self::EVENT_STRIPE_PAYMENT_INTENT, $event);
     }
 
 }

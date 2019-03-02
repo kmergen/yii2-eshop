@@ -18,8 +18,8 @@ class Module extends \yii\base\Module
 
     public $classEventHandler = [
         [
-            'class' => controllers\StripeWebhooksController::class,
-            'event' => controllers\StripeWebhooksController::EVENT_STRIPE_WEBHOOK,
+            'class' => controllers\StripeWebhookController::class,
+            'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT,
             'callable' => [models\Order::class, 'handleStripeWebhooks']
         ],
         [

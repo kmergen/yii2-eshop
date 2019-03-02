@@ -44,11 +44,6 @@ class CheckoutController extends Controller
      */
     public $defaultAction = 'checkout';
 
-    /**
-     * integer The user id:
-     */
-    private $_uid;
-
     public function behaviors()
     {
         return [
@@ -60,12 +55,6 @@ class CheckoutController extends Controller
                 ],
             ],
         ];
-    }
-
-    public function init()
-    {
-        // this handler is an object method
-
     }
 
 
