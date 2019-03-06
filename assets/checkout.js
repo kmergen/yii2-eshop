@@ -1,16 +1,15 @@
-'use strict';
-
 /* global jQuery */
 /* global KMeshop */
 /* global Stripe */
 // Checkout Javascript
 
-KMeshop.checkout = function ($) {
+'use strict';
 
+KMeshop.checkout = function ($) {
     // Public goes here
     var pub = {
         init: function init(options) {
-            $.extend(settings, defaults, options);
+            $.extend(settings, options);
             checkoutForm = document.getElementById(settings.CHECKOUT_FORM_ID);
             paymentWall = document.getElementById(settings.PAYMENT_WALL_ID);
             stripe = Stripe(settings.stripeId, {
@@ -20,8 +19,9 @@ KMeshop.checkout = function ($) {
             initEvents();
         }
 
+        /*eslint-disable */
         //Private goes here
-    };var defaults = {
+    };var settings = {
         active: true,
         CHECKOUT_FORM_ID: 'checkoutForm',
         PAYMENT_WALL_ID: 'paymentWall',
@@ -32,7 +32,6 @@ KMeshop.checkout = function ($) {
         stripeId: undefined
     };
 
-    var settings = {};
     var checkoutForm = undefined;
     var paymentWall = undefined;
 
@@ -41,7 +40,6 @@ KMeshop.checkout = function ($) {
     var stripeIban = undefined;
     var stripeCardElement = undefined;
 
-    /*eslint-disable */
     function paymentMethodsCallbacks(paymentMethod, action, data) {
         switch (paymentMethod) {
             case 'paypal_rest':
@@ -127,7 +125,7 @@ KMeshop.checkout = function ($) {
                 paymentMethodsCallbacks(paymentmethod, 'add', data);
                 $(checkoutForm).yiiActiveForm('validateAttribute', 'checkoutform-paymentmethod');
             }).fail(function () {
-                //  alert( 'error' );
+                //  alert( 'error' )
             });
         });
 
@@ -381,6 +379,7 @@ KMeshop.checkout = function ($) {
     // hiddenInput.setAttribute('name', 'stripeToken');
     // hiddenInput.setAttribute('value', token.id);
     // checkoutForm.appendChild(hiddenInput);
+
 
     /* Insert the Source ID into the form so it gets submitted to the server. */
     function stripeSourceHandler(source) {

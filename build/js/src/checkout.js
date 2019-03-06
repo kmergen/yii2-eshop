@@ -3,25 +3,26 @@
 /* global Stripe */
 // Checkout Javascript
 
-KMeshop.checkout = function ($) {
+'use strict'
 
-
+KMeshop.checkout = (function ($) {
     // Public goes here
     const pub = {
         init: function (options) {
-            $.extend(settings, defaults, options)
-            checkoutForm = document.getElementById(settings.CHECKOUT_FORM_ID);
-            paymentWall = document.getElementById(settings.PAYMENT_WALL_ID);
+            $.extend(settings, options)
+            checkoutForm = document.getElementById(settings.CHECKOUT_FORM_ID)
+            paymentWall = document.getElementById(settings.PAYMENT_WALL_ID)
             stripe = Stripe(settings.stripeId, {
                 betas: ['payment_intent_beta_3']
-            });
+            })
             elements = stripe.elements()
-            initEvents();
+            initEvents()
         }
     }
 
+    /*eslint-disable */
     //Private goes here
-    const defaults = {
+    const settings = {
         active: true,
         CHECKOUT_FORM_ID: 'checkoutForm',
         PAYMENT_WALL_ID: 'paymentWall',
@@ -32,7 +33,6 @@ KMeshop.checkout = function ($) {
         stripeId: undefined
     }
 
-    let settings = {}
     let checkoutForm = undefined
     let paymentWall = undefined
 
@@ -41,7 +41,6 @@ KMeshop.checkout = function ($) {
     let stripeIban = undefined
     let stripeCardElement = undefined
 
-    /*eslint-disable */
     function paymentMethodsCallbacks(paymentMethod, action, data) {
         switch (paymentMethod) {
             case 'paypal_rest':
@@ -80,18 +79,18 @@ KMeshop.checkout = function ($) {
     /*eslint-enable */
 
     function getPaymentMethod() {
-        return document.getElementById(settings.PAYMENT_METHOD_ID).value;
+        return document.getElementById(settings.PAYMENT_METHOD_ID).value
     }
 
     function setPaymentMethod(val) {
-        document.getElementById(settings.PAYMENT_METHOD_ID).value = val;
+        document.getElementById(settings.PAYMENT_METHOD_ID).value = val
     }
 
     /* Callback function from Paymentmethod submitFunction
     This is the final function that the active payment method use as callback
     The data parameter is an object with specified keys */
     function checkoutFinal() {
-        checkoutForm.submit();
+        checkoutForm.submit()
     }
 
     function initEvents() {
@@ -117,35 +116,34 @@ KMeshop.checkout = function ($) {
 
         /*eslint-enable */
         $(paymentWall).on('show.bs.collapse', function (event) {
-            var el = $(event.target);
+            const el = $(event.target)
             el.find('.spinner-border').removeClass('d-none')
             $.ajax(el.data('paneurl'))
                 .done(function (data) {
                     el.find('.spinner-border').addClass('d-none')
                     el.children(settings.PANE_CONTENT_SELECTOR).html(data.html)
-                    let paymentmethod = el.data('paymentmethod');
+                    const paymentmethod = el.data('paymentmethod')
                     setPaymentMethod(paymentmethod)
                     paymentMethodsCallbacks(paymentmethod, 'add', data)
-                    $(checkoutForm).yiiActiveForm('validateAttribute', 'checkoutform-paymentmethod');
+                    $(checkoutForm).yiiActiveForm('validateAttribute', 'checkoutform-paymentmethod')
                 })
                 .fail(function () {
-                    //  alert( 'error' );
+                    //  alert( 'error' )
                 })
         })
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
-            const el = $(event.target);
+            const el = $(event.target)
             const paymentmethod = getPaymentMethod()
-            setPaymentMethod('');
+            setPaymentMethod('')
             paymentMethodsCallbacks(paymentmethod, 'remove')
-            el.children(settings.PANE_CONTENT_SELECTOR).empty();
-
+            el.children(settings.PANE_CONTENT_SELECTOR).empty()
         })
 
         $(document.getElementById(settings.CANCEL_BUTTON_ID)).on('click', function () {
-            document.getElementById(settings.CHECKOUT_CANCELED_ID).value = '1';
-            checkoutForm.submit();
-        });
+            document.getElementById(settings.CHECKOUT_CANCELED_ID).value = '1'
+            checkoutForm.submit()
+        })
     }
 
     /*eslint-disable */
@@ -153,15 +151,15 @@ KMeshop.checkout = function ($) {
     // Payment method specific functions
 
     function addPaypalRest() {
-        return;
+        return
     }
 
     function removePaypalRest() {
-        return;
+        return
     }
 
     function submitPaypalRest() {
-        checkoutFinal();
+        checkoutFinal()
     }
 
     /**
@@ -185,9 +183,9 @@ KMeshop.checkout = function ($) {
         // Add an instance of the card Element into the `card-element` <div>.
         stripeCardElement.mount('#stripeCardElement');
 
-        const cardButton = document.getElementById('stripeCardButton');
-        cardButton.addEventListener('click', function(ev) {
-            const cardholderName = document.getElementById('card-cardholdername');
+        const cardButton = document.getElementById('stripeCardButton')
+        cardButton.addEventListener('click', function (ev) {
+            const cardholderName = document.getElementById('card-cardholdername')
             const clientSecret = cardButton.dataset.secret;
             stripe.handleCardPayment(
                 clientSecret, stripeCardElement, {
@@ -195,7 +193,7 @@ KMeshop.checkout = function ($) {
                         owner: {name: cardholderName.value}
                     }
                 }
-            ).then(function(result) {
+            ).then(function (result) {
                 if (result.error) {
                     let error = 'Haha'
                     // Display error.message in your UI.
@@ -208,18 +206,18 @@ KMeshop.checkout = function ($) {
 
         stripeCardElement.addEventListener('change', function (event) {
             const formGroup = document.getElementById('stripeCardFormGroup')
-            const errorElement = document.getElementById('stripeCardErrors');
+            const errorElement = document.getElementById('stripeCardErrors')
             if (event.error) {
                 errorElement.textContent = event.error.message
-                formGroup.classList.add('is-invalid');
+                formGroup.classList.add('is-invalid')
                 if (!event.complete) {
-                    formGroup.classList.remove('is-valid');
+                    formGroup.classList.remove('is-valid')
                 }
             } else {
                 errorElement.textContent = ''
-                formGroup.classList.remove('is-invalid');
+                formGroup.classList.remove('is-invalid')
                 if (event.complete) {
-                    formGroup.classList.add('is-valid');
+                    formGroup.classList.add('is-valid')
                 }
             }
         });
@@ -287,29 +285,29 @@ KMeshop.checkout = function ($) {
 
         stripeIban.on('change', function (event) {
             var formGroup = document.getElementById('stripeIbanFormGroup')
-            var errorElement = document.getElementById('stripeIbanErrors');
+            var errorElement = document.getElementById('stripeIbanErrors')
             var bankName = document.getElementById('stripeBankName');
             // Handle real-time validation errors from the iban Element.
             if (event.error) {
                 errorElement.textContent = event.error.message
                 formGroup.classList.add('is-invalid');
                 if (!event.complete) {
-                    formGroup.classList.remove('is-valid');
+                    formGroup.classList.remove('is-valid')
                 }
             } else {
                 errorElement.textContent = ''
-                formGroup.classList.remove('is-invalid');
+                formGroup.classList.remove('is-invalid')
                 if (event.complete) {
-                    formGroup.classList.add('is-valid');
+                    formGroup.classList.add('is-valid')
                 }
             }
 
             // Display bank name corresponding to IBAN, if available.
             if (event.bankName) {
-                bankName.textContent = event.bankName;
+                bankName.textContent = event.bankName
                 bankName.classList.add('d-block');
             } else {
-                bankName.classList.remove('d-block');
+                bankName.classList.remove('d-block')
                 bankName.classList.add('d-none');
             }
         });
@@ -387,6 +385,7 @@ KMeshop.checkout = function ($) {
         // hiddenInput.setAttribute('value', token.id);
         // checkoutForm.appendChild(hiddenInput);
     }
+
     /* Insert the Source ID into the form so it gets submitted to the server. */
     function stripeSourceHandler(source) {
         let hiddenInput = document.createElement('input');
@@ -398,6 +397,6 @@ KMeshop.checkout = function ($) {
 
     /*eslint-enable */
     return pub
-}(jQuery)
+}(jQuery))
 
 

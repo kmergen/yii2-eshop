@@ -14,7 +14,6 @@ use yii\db\Expression;
  * @property string $status The order status.
  * @property string $total
  * @property int $invoice_address_id
- * @property int $shipping_id
  * @property string $data A serialized array of extra data.
  * @property string $ip Host IP address of the person paying for the order.
  * @property string $comment Order comment
@@ -32,12 +31,12 @@ class Order extends \yii\db\ActiveRecord
      * If the order is article without shipping e.g. a servic then the order is complete if the
      * payment is complete
      */
-    const STATUS_COMPLETE = 'complete';
+    const STATE_COMPLETE = 'complete';
 
     /**
      * @const string The order shipping or payment or both are incomplete
      */
-    const STATUS_PENDING = 'pending';
+    const STATE_PENDING = 'pending';
 
     /**
      * {@inheritdoc}
@@ -107,15 +106,15 @@ class Order extends \yii\db\ActiveRecord
             // We have an order with shipping
             if ($order->payment->status === PaymentStatus::COMPLETE
                 && $order->shipping->status === ShippingStatus::COMPLETE) {
-                $status = static::STATUS_COMPLETE;
+                $status = static::STATE_COMPLETE;
             } else {
-                $status = static::STATUS_PENDING;
+                $status = static::STATE_PENDING;
             }
         } else {
             if ($order->payment->status === PaymentStatus::COMPLETE) {
-                $status = static::STATUS_COMPLETE;
+                $status = static::STATE_COMPLETE;
             } else {
-                $status = static::STATUS_PENDING;
+                $status = static::STATE_PENDING;
             }
         }
         $order->updateAttributes(['status' => $status]);
@@ -126,7 +125,13 @@ class Order extends \yii\db\ActiveRecord
      */
     public static function handleStripeWebhooks($event)
     {
-        Yii::error('Stripe webhook mit Id ' . $event->stripeData->id . ' wurde gesendet.');
+        $data = $event->sender->data;
+        $webhook = $data->type;
+
+        if ($webhook === 'payment_intent.succeeded') {
+            $intent = $data->data->object;
+        }
+        Yii::info('Stripe webhook ' . $webhook . 'mit Id ' . $data->data->object->id . ' wurde empfangen.', __Method__);
     }
 
     /*
@@ -155,15 +160,6 @@ class Order extends \yii\db\ActiveRecord
     function getInvoiceAddress()
     {
         return $this->hasOne(Address::class, ['id' => 'invoice_address_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public
-    function getShipping()
-    {
-        return $this->hasOne(Shipping::class, ['order_id' => 'id']);
     }
 
     /**

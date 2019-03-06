@@ -8,11 +8,11 @@ var KMeshop = function ($) {
 
     var pub = {
         init: function init(options) {
-            $.extend(opt, options);
+            $.extend(settings, options);
         }
 
         //Private goes here
-    };var opt = {
+    };var settings = {
         active: true
     };
 

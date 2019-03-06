@@ -45,12 +45,13 @@ class PaygateStripe extends Component
     }
 
     /**
-     * Create a stripe Intent
+     * Create a stripe PaymentIntent
      * @return \Stripe\ApiResource
      */
     public function createIntent()
     {
         \Stripe\Stripe::setApiKey($this->secretKey);
+        $am = (Cart::getTotal() * 100);
         $intent = \Stripe\PaymentIntent::create([
             "amount" => (Cart::getTotal() * 100), // eurocent
             "currency" => $this->currency,

@@ -1,22 +1,21 @@
 /* global jQuery */
 // Eshop Javascript
 
-const KMeshop = function ($) {
+const KMeshop = (($) => {
     // Public goes here
 
     const pub = {
-        init: function (options) {
-            $.extend(opt, options)
+        init: (options) => {
+            $.extend(settings, options)
         }
     }
 
     //Private goes here
-    const opt = {
-        active: true,
+    const settings = {
+        active: true
     }
 
     return pub
-}(jQuery)
-
+})(jQuery)
 
 KMeshop.init()

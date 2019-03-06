@@ -1,0 +1,31 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jquery": true
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "parserOptions": {
+    "sourceType": "script",
+    "ecmaVersion": "2017"
+  },
+  "extends": [".eslintrc_bestpractice.json"],
+  "rules": {
+    "consistent-return": "off",
+    "func-style": "off",
+    "no-console": "off",
+    "no-magic-numbers": "off",
+    "no-process-env": "off",
+    "no-process-exit": "off",
+    "no-sync": "off",
+    "spaced-comment": "off",
+    "linebreak-style":"off",
+    "object-shorthand": "off",
+    "no-alert": "off",
+    "strict": "off"
+  }
+}

@@ -66,6 +66,12 @@ class CheckoutController extends Controller
      */
     public function actionCheckout()
     {
+        // Check if the cart is okay
+        $session = Yii::$app->session;
+        if (!Cart::check()) {
+            return $this->goBack();
+        }
+
         $cartContent = Cart::getCartContent();
 
         if (empty($cartContent)) {
@@ -95,7 +101,6 @@ class CheckoutController extends Controller
             $customer = new Customer();
             $customer->user_id = Yii::$app->user->id;
             $customer->email = Yii::$app->user->getIdentity()->email;
-            $customer->save();
             $address = new Address();
         }
 
@@ -105,8 +110,6 @@ class CheckoutController extends Controller
         } else {
             $order = Order::find()->with('order_items')->where(['order_id' => Cart::getOrderId()]);
         }
-
-
 
 
         if ($model->load($post)) {
@@ -132,11 +135,11 @@ class CheckoutController extends Controller
 
                 } else { // Model not validate
                     Yii::$app->session->setFlash('warning', Yii::t('flash.checkoutModel.notValidate.OnServerSide'));
-                    return $this->redirect([Yii::$app->session->get('checkoutCanceledReturnUrl')]);
+                    return $this->redirect([Yii::$app->session->get(Cart::LAST_URL)]);
                 }
             } else {
-                Yii::$app->session->set('checkoutCanceled', true);
-                return $this->redirect([Yii::$app->session->get('checkoutCanceledReturnUrl')]);
+                Yii::$app->session->set(Cart::IS_CHECKOUT_CANCELED, true);
+                return $this->redirect([Yii::$app->session->get(Cart::LAST_URL)]);
             }
             $model->paymentMethod = null;
         }
@@ -212,7 +215,7 @@ class CheckoutController extends Controller
         $order->customer_id = $customerId;
         $order->total = $cartContent['total'];
         $order->ip = Yii::$app->getRequest()->getRemoteIP();
-        $order->status = Order::STATUS_PENDING;
+        $order->status = Order::STATE_PENDING;
         $order->save();
         foreach ($cartContent['items'] as $v) {
             if ($v['qty'] > 0) {
@@ -227,16 +230,4 @@ class CheckoutController extends Controller
         }
         return $order;
     }
-
-    protected function destroySessionVars()
-    {
-        Cart::destroy();
-        Yii::$app->session->remove('stripeIntent');
-        Yii::$app->session->remove('orderId');
-        Yii::$app->session->remove('checkoutCanceledReturnUrl');
-        Yii::$app->session->remove('checkoutCanceled');
-
-    }
-
-
 }
