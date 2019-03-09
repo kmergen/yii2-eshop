@@ -29,7 +29,7 @@ if (!empty($model['mediaFiles']) && !empty($model['mediaFiles'][0]['url'])) {
     </div>
 
     <div class="col-6">
-        <h5><?= Html::a(Html::encode($model['title']), ['article/view', 'id' => $model['id']]) ?></h5>
+        <h5><?= Html::a(Html::encode($model['title']), ['product/view', 'id' => $model['id']]) ?></h5>
         <p><?= StringHelper::truncate(Html::encode($model['description']), 50, ' ...') ?></p>
     </div>
     <div class="col-1">

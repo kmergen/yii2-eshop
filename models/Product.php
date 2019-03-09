@@ -10,7 +10,7 @@ use yii\db\Expression;
 use yii\filters\AccessControl;
 
 /**
- * This is the model class for table "eshop_article".
+ * This is the model class for table "eshop_product".
  *
  * @property int $id The product id
  * @property string $sku SKU or model number.
@@ -19,20 +19,21 @@ use yii\filters\AccessControl;
  * @property string $description The description of the product
  * @property string $sell_price
  * @property int $default_qty
+ * @property int $max_qty
  * @property int $active
  * @property string $created_at
  * @property string $updated_at
  *
  * @property ArticleCategory $category
  */
-class Article extends \yii\db\ActiveRecord
+class Product extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'eshop_article';
+        return 'eshop_product';
     }
 
     /**
@@ -59,7 +60,7 @@ class Article extends \yii\db\ActiveRecord
     {
         return [
             [['title', 'sku', 'category_id', 'description', 'sell_price'], 'required'],
-            [['category_id', 'default_qty', 'active'], 'integer'],
+            [['category_id', 'default_qty', 'max_qty', 'active'], 'integer'],
             [['description'], 'string'],
             [['sell_price'], 'number'],
             [['created_at', 'updated_at'], 'safe'],

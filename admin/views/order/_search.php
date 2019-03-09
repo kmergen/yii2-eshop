@@ -19,7 +19,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'customer_id') ?>
 
-    <?= $form->field($model, 'status') ?>
+    <?= $form->field($model, 'state') ?>
 
     <?= $form->field($model, 'total') ?>
 

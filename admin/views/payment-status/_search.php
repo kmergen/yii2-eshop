@@ -8,7 +8,7 @@ use yii\widgets\ActiveForm;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="payment-status-search">
+<div class="payment-state-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
@@ -19,7 +19,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'payment_id') ?>
 
-    <?= $form->field($model, 'status') ?>
+    <?= $form->field($model, 'state') ?>
 
 
     <?= $form->field($model, 'created_at') ?>

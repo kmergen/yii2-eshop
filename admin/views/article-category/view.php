@@ -10,7 +10,7 @@ $this->title = $model->name;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Article Categories'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="article-category-view">
+<div class="product-category-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

@@ -28,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'customer_id',
-            'status',
+            'state',
             'total',
             'invoice_address_id',
             //'data:ntext',

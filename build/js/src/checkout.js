@@ -101,7 +101,7 @@ KMeshop.checkout = (function ($) {
         //     const $form = $(this)
         //     let $data = $form.data("yiiActiveForm");
         //     $.each($data.attributes, function() {
-        //         this.status = 3;
+        //         this.state = 3;
         //     });
         //     $form.yiiActiveForm('validate')
         // })

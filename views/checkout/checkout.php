@@ -73,7 +73,7 @@ CheckoutAsset::register($this);
 
                         <div<?= Html::renderTagAttributes($attributes) ?>>
                             <div class="text-center">
-                                <div class="spinner-border mt-5" role="status">
+                                <div class="spinner-border mt-5" role="state">
                                     <span class="sr-only">Loading...</span>
                                 </div>
                             </div>

@@ -14,7 +14,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'customer_id')->textInput() ?>
 
-    <?= $form->field($model, 'status')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'state')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'total')->textInput(['maxlength' => true]) ?>
 
@@ -24,7 +24,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'ip')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'comment')->textarea(['rows' => 6]) ?>
+    <?= $form->field($model, 'notes')->textarea(['rows' => 6]) ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>

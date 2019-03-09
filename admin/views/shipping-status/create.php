@@ -9,7 +9,7 @@ $this->title = Yii::t('eshop', 'Create Shipping Status');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Shipping Statuses'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="shipping-status-create">
+<div class="shipping-state-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'order_id',
             'shipping_address_id',
             'shipping_company_id',
-            'status',
+            'state',
             'data',
         ],
     ]) ?>

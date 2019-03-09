@@ -13,7 +13,7 @@ use kmergen\widgets\LinkPager;
 $this->title = Yii::t('eshop', 'Article Categories');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="article-category-index">
+<div class="product-category-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>

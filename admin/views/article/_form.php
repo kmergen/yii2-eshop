@@ -11,7 +11,7 @@ use kmergen\media\widgets\dropzone\Dropzone;
 /* @var $form yii\bootstrap4\ActiveForm */
 ?>
 
-<div class="article-form">
+<div class="product-form">
 
     <?php $form = ActiveForm::begin([
         'layout' => 'horizontal'
@@ -49,7 +49,7 @@ use kmergen\media\widgets\dropzone\Dropzone;
                     'dictCancelUpload' => '',
                     'dictDefaultMessage' => '',
                     'params' => [
-                        'targetUrl' => 'images/eshop/article'
+                        'targetUrl' => 'images/eshop/product'
                     ]
                 ],
             ]);

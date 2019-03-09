@@ -14,7 +14,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'customer_id')->textInput() ?>
 
-    <?= $form->field($model, 'status')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'state')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'total')->textInput(['maxlength' => true]) ?>
 

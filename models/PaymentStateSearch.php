@@ -9,7 +9,7 @@ use kmergen\eshop\models\PaymentStatus;
 /**
  * PaymentStatusSearch represents the model behind the search form of `kmergen\eshop\models\PaymentStatus`.
  */
-class PaymentStatusSearch extends PaymentStatus
+class PaymentStateSearch extends PaymentStatus
 {
     /**
      * {@inheritdoc}

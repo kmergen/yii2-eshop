@@ -12,7 +12,7 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Shipping Statuses'
 $this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = Yii::t('eshop', 'Update');
 ?>
-<div class="shipping-status-update">
+<div class="shipping-state-update">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

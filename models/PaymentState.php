@@ -15,7 +15,7 @@ use Yii;
  *
  * @property Payment $payment
  */
-class PaymentStatus extends \yii\db\ActiveRecord
+class PaymentState extends \yii\db\ActiveRecord
 {
     const PENDING = 'pending';
     const COMPLETE = 'complete';
@@ -72,7 +72,7 @@ class PaymentStatus extends \yii\db\ActiveRecord
     }
 
     /**
-     * Assignments from payment methods states to PaymentStatus constants
+     * Assignments from payment methods statuss to PaymentStatus constants
      * @return mixed
      */
     public static function statusAssignment($key = null)

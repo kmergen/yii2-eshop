@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `eshop_customer` (
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `eshop_article_category` (
+CREATE TABLE IF NOT EXISTS `eshop_product_category` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL,
 	`parent` INT(11) NOT NULL DEFAULT '0',
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `eshop_article_category` (
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `eshop_article` (
+CREATE TABLE IF NOT EXISTS `eshop_product` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'The product id',
 	`sku` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'SKU or model number.',
 	`category_id` INT(11) NOT NULL COMMENT 'FK The category id from table eshop_product_category ',
@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS `eshop_article` (
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `sku` (`sku`),
 	INDEX `category_id` (`category_id`),
-	INDEX `FK_eshop_article_media_album` (`media_album_id`),
-	CONSTRAINT `FK_eshop_article_eshop_article_category` FOREIGN KEY (`category_id`) REFERENCES `eshop_article_category` (`id`) ON UPDATE CASCADE,
-	CONSTRAINT `FK_eshop_article_media_album` FOREIGN KEY (`media_album_id`) REFERENCES `media_album` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
+	INDEX `FK_eshop_product_media_album` (`media_album_id`),
+	CONSTRAINT `FK_eshop_product_eshop_product_category` FOREIGN KEY (`category_id`) REFERENCES `eshop_product_category` (`id`) ON UPDATE CASCADE,
+	CONSTRAINT `FK_eshop_product_media_album` FOREIGN KEY (`media_album_id`) REFERENCES `media_album` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
@@ -95,13 +95,13 @@ ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `eshop_order_item` (
 	`order_id` INT(11)  NOT NULL COMMENT 'The sc_order.order_id.',
-	`article_id` INT(11)  NOT NULL COMMENT 'The product id from table product',
+	`product_id` INT(11)  NOT NULL COMMENT 'The product id from table product',
 	`title` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'The product title, from node.title.',
 	`sku` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'The product model/SKU, from sc_products.model.',
 	`qty` SMALLINT(5)  NOT NULL,
 	`sell_price` DECIMAL(15,4) NOT NULL,
 	`data` TEXT NULL DEFAULT NULL COMMENT 'A serialized array of extra data.',
-	PRIMARY KEY (`order_id`, `article_id`),
+	PRIMARY KEY (`order_id`, `product_id`),
 	CONSTRAINT `FK_eshop_order_item_eshop_order` FOREIGN KEY (`order_id`) REFERENCES `eshop_order` (`id`) ON DELETE CASCADE
 )
 COLLATE='utf8_general_ci'

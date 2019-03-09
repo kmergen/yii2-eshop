@@ -14,7 +14,7 @@ use yii\base\Event;
 class ArticleController extends AdminController
 {
 
-    const EVENT_ARTICLE_SHOW = 'articleShow';
+    const EVENT_PRODUCT_SHOW = 'productShow';
 
     /**
      * Lists all Article models.
@@ -40,8 +40,8 @@ class ArticleController extends AdminController
     public function actionView($id)
     {
         $event = new Event();
-        //Event::trigger(Article::class, self::EVENT_ARTICLE_SHOW, $event);
-        $this->trigger(self::EVENT_ARTICLE_SHOW, $event);
+        //Event::trigger(Article::class, self::EVENT_PRODUCT_SHOW, $event);
+        $this->trigger(self::EVENT_PRODUCT_SHOW, $event);
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);

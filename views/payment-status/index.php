@@ -10,7 +10,7 @@ use yii\grid\GridView;
 $this->title = Yii::t('eshop', 'Payment Statuses');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="payment-status-index">
+<div class="payment-state-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -28,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'payment_id',
-            'status',
+            'state',
             'created_at',
             //'info:ntext',
 

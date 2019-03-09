@@ -8,7 +8,7 @@ use yii\bootstrap4\ActiveForm;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="article-category-form">
+<div class="product-category-form">
 
     <?php $form = ActiveForm::begin(); ?>
 

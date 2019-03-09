@@ -15,7 +15,7 @@ use Yii;
  *
  * @property Shipping $shipping
  */
-class ShippingStatus extends \yii\db\ActiveRecord
+class ShippingState extends \yii\db\ActiveRecord
 {
     const PENDING = 'pending';
     const COMPLETE = 'complete';

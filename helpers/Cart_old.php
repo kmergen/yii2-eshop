@@ -13,6 +13,163 @@ use kmergen\eshop\models\Order;
  */
 class Cart extends Component
 {
+    const CART_ID = 'cart';
+    const ORDER_ID = 'orderId';
+    const LAST_URL = 'cartLastUrl';
+    const STRIPE_INTENT = 'stripeIntent';
+    const IS_CHECKOUT_CANCELED = 'isCheckoutCanceled';
+
+    /** Triggered on item add */
+    const EVENT_ITEM_ADD = 'addItem';
+    /** Triggered on item add */
+    const EVENT_ITEM_UPDATE = 'updateItem';
+    /** Triggered on item add */
+    const EVENT_BEFORE_ITEM_REMOVE = 'beforeRemoveItem';
+
+    /**
+     * Returns the cart from cart session, if not set null
+     * @return mixed
+     */
+    public static function getCart()
+    {
+        return Yii::$app->session->get(self::CART_ID);
+    }
+
+    /**
+     * Set cart to the cart session
+     * @return void
+     */
+    public static function setCart($value)
+    {
+        Yii::$app->session->set(self::CART_ID, $value);
+    }
+
+    /**
+     * Returns the order id from cart session, if not set null
+     * @return mixed
+     */
+    public static function getOrderId()
+    {
+        return Yii::$app->session->get(self::ORDER_ID);
+    }
+
+    /**
+     * Set order id to the cart session
+     * @return void
+     */
+    public static function setOrderId($value)
+    {
+        Yii::$app->session->set(self::ORDER_ID, $value);
+    }
+
+    /**
+     * Returns the last url from cart session, if not set null
+     * @return mixed
+     */
+    public static function getLastUrl()
+    {
+        return Yii::$app->session->get(self::LAST_URL);
+    }
+
+    /**
+     * Set last url to the cart session
+     * @return void
+     */
+    public static function setLastUrl($value)
+    {
+        Yii::$app->session->set(self::LAST_URL, $value);
+    }
+
+    /**
+     * Returns the stripe intent from cart session, if not set null
+     * @return mixed
+     */
+    public static function getStripeIntent()
+    {
+        return Yii::$app->session->get(self::STRIPE_INTENT);
+    }
+
+    /**
+     * Set stripe intent to the cart session
+     * @return void
+     */
+    public static function setStripeIntent($value)
+    {
+        Yii::$app->session->set(self::STRIPE_INTENT, $value);
+    }
+
+    /**
+     * Returns is checkout canceled from cart session, if not set null
+     * @return mixed
+     */
+    public static function getCheckoutIsCanceled()
+    {
+        return Yii::$app->session->get(self::IS_CHECKOUT_CANCELED);
+    }
+
+    /**
+     * Set is checkout canceled to the cart session (possible values are true or false)
+     * @return void
+     */
+    public static function setCheckoutIsCanceled($value)
+    {
+        Yii::$app->session->set(self::IS_CHECKOUT_CANCELED, $value);
+    }
+
+    /**
+     * Returns true if Cart is okay and false if not
+     * @return boolean
+     */
+    public static function check()
+    {
+        $session = Yii::$app->session;
+        // Check Order Id
+        if (($orderId = self::getOrderId()) !== null) {
+            if (self::getOrder($orderId) === null) {
+                self::destroy();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete the cart session variables
+     */
+    public static function destroy()
+    {
+        self::destroyCart();
+        Yii::$app->session->remove(self::LAST_URL);
+        Yii::$app->session->remove(self::STRIPE_INTENT);
+        Yii::$app->session->remove(self::ORDER_ID);
+        Yii::$app->session->remove(self::IS_CHECKOUT_CANCELED);
+    }
+
+    /**
+     * Delete the cart session variable
+     */
+    public static function destroyCart()
+    {
+        Yii::$app->session->remove(self::CART_ID);
+    }
+
+    /**
+     * Delete all items from the cart so the cart is empty
+     */
+    public static function clearCart()
+    {
+        Yii::$app->session->set(self::CART_ID, []);
+    }
+
+    /**
+     * Get the order from Cart
+     * @return mixed
+     */
+    public static function getOrder($id)
+    {
+        return Order::find()->with('orderItems')->where(['id' => $id])->one();
+    }
 
     /**
      * Adds an item to the cart.
@@ -22,7 +179,29 @@ class Cart extends Component
      */
     public static function addItem($id, $qty = 1, $msg = TRUE)
     {
+        if (($cart = self::getCart()) === null) {
+            $cart = [];
+        }
 
+        $default_qty = Yii::$app->db->createCommand("SELECT default_qty FROM eshop_product WHERE id=:id", [':id' => $id])->queryScalar();
+
+        //If the product is not in the cart yet we add it
+        if (!array_key_exists($id, $cart)) {
+            $cart[$id] = $qty;
+
+            if ($msg) {
+                Yii::$app->session->setFlash('success', "Produkt wurde in Ihren Warenkorb gelegt.");
+            }
+        } //If the default_qty = 0 we do nothing because it was add the first time with the right qty 1
+        elseif ($default_qty > 0) {
+            $cart[$id] += $qty;
+            if ($msg) {
+                Yii::$app->session->setFlash('success', "Ihr Warenkorb wurde aktualisiert.");
+            }
+        }
+
+        Yii::$app->session->set('cartLastUrl', Yii::$app->getRequest()->url);
+        self::setCart($cart);
     }
 
     /**

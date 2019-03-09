@@ -5,23 +5,23 @@ namespace kmergen\eshop\models;
 use Yii;
 
 /**
- * This is the model class for table "eshop_article_category".
+ * This is the model class for table "eshop_product_category".
  *
  * @property int $id
  * @property string $name
  * @property int $parent
  * @property int $shipping
  *
- * @property Article[] $articles
+ * @property Article[] $products
  */
-class ArticleCategory extends \yii\db\ActiveRecord
+class ProductCategory extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'eshop_article_category';
+        return 'eshop_product_category';
     }
 
     /**

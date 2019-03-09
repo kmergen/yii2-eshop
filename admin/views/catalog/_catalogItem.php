@@ -21,7 +21,7 @@ if (!empty($model['mediaFiles']) && !empty($model['mediaFiles'][0]['url'])) {
 <div class="card h-100">
     <?php  echo $image ?>
     <div class="card-body">
-        <h5 class="card-title"><?= Html::a($model['title'], ['article/view', 'id' => $model['id']]) ?></h5>
+        <h5 class="card-title"><?= Html::a($model['title'], ['product/view', 'id' => $model['id']]) ?></h5>
         <p class="card-text">
         <p><?= StringHelper::truncate(Html::encode($model['description']), 50, null) ?></p>
         <p><strong><?= Html::encode(Yii::$app->formatter->asCurrency($model['sell_price'])) ?></strong></p>

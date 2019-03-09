@@ -24,7 +24,7 @@ class Module extends \yii\base\Module
         ],
         [
             'class' => controllers\ArticleController::class,
-            'event' => controllers\ArticleController::EVENT_ARTICLE_SHOW,
+            'event' => controllers\ArticleController::EVENT_PRODUCT_SHOW,
             'callable' => [models\Order::class, 'handleArticleShowEvent']
         ],
     ];

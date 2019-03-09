@@ -15,8 +15,8 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('eshop', 'Update'), ['update', 'order_id' => $model->order_id, 'article_id' => $model->article_id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a(Yii::t('eshop', 'Delete'), ['delete', 'order_id' => $model->order_id, 'article_id' => $model->article_id], [
+        <?= Html::a(Yii::t('eshop', 'Update'), ['update', 'order_id' => $model->order_id, 'product_id' => $model->product_id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a(Yii::t('eshop', 'Delete'), ['delete', 'order_id' => $model->order_id, 'product_id' => $model->product_id], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => Yii::t('eshop', 'Are you sure you want to delete this item?'),
@@ -29,7 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'order_id',
-            'article_id',
+            'product_id',
             'title',
             'sku',
             'qty',

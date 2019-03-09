@@ -8,13 +8,13 @@ use yii\widgets\ActiveForm;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="payment-status-form">
+<div class="payment-state-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
     <?= $form->field($model, 'payment_id')->textInput() ?>
 
-    <?= $form->field($model, 'status')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'state')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'created_at')->textInput() ?>
 

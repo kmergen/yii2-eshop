@@ -10,7 +10,7 @@ $this->title = Yii::t('eshop', 'Create Article Category');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Article Categories'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="article-category-create">
+<div class="product-category-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

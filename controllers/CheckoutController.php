@@ -66,15 +66,7 @@ class CheckoutController extends Controller
      */
     public function actionCheckout()
     {
-        // Check if the cart is okay
-        $session = Yii::$app->session;
-        if (!Cart::check()) {
-            return $this->goBack();
-        }
-
-        $cartContent = Cart::getCartContent();
-
-        if (empty($cartContent)) {
+        if (($cart = Order::getCurrentCart()) === null) {
             Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your cart is empty.'));
             return $this->goBack();
         }
@@ -83,7 +75,7 @@ class CheckoutController extends Controller
         $request = Yii::$app->getRequest();
         $post = $request->post();
         $model = new CheckoutForm();
-        $isOrderWithShipping = $cartContent['shipping'];
+       // $isOrderWithShipping = $cartContent['shipping'];
         $paymentModel = null;
 
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
@@ -215,12 +207,12 @@ class CheckoutController extends Controller
         $order->customer_id = $customerId;
         $order->total = $cartContent['total'];
         $order->ip = Yii::$app->getRequest()->getRemoteIP();
-        $order->status = Order::STATE_PENDING;
+        $order->status = Order::STATUS_PENDING;
         $order->save();
         foreach ($cartContent['items'] as $v) {
             if ($v['qty'] > 0) {
                 $orderItem = new OrderItem();
-                $orderItem->article_id = $v['id'];
+                $orderItem->product_id = $v['id'];
                 $orderItem->title = $v['title'];
                 $orderItem->sku = $v['sku'];
                 $orderItem->qty = $v['qty'];

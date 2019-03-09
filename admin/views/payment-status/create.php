@@ -9,7 +9,7 @@ $this->title = Yii::t('eshop', 'Create Payment Status');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Payment Statuses'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="payment-status-create">
+<div class="payment-state-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

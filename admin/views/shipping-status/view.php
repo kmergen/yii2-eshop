@@ -11,7 +11,7 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Shipping Statuses'
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="shipping-status-view">
+<div class="shipping-state-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'attributes' => [
             'id',
             'shipping_id',
-            'status',
+            'state',
             'created_at',
             'info:ntext',
         ],

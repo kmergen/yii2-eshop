@@ -19,7 +19,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'transaction_id') ?>
 
-    <?= $form->field($model, 'status') ?>
+    <?= $form->field($model, 'state') ?>
 
     <?= $form->field($model, 'payment_method') ?>
 

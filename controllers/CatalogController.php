@@ -10,7 +10,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * CatalogController shows the articles to the customer.
+ * CatalogController shows the products to the customer.
  */
 class CatalogController extends Controller
 {

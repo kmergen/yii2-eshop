@@ -18,7 +18,7 @@ class OrderItemSearch extends OrderItem
     public function rules()
     {
         return [
-            [['order_id', 'article_id', 'qty'], 'integer'],
+            [['order_id', 'product_id', 'qty'], 'integer'],
             [['title', 'sku', 'data'], 'safe'],
             [['sell_price'], 'number'],
         ];
@@ -61,7 +61,7 @@ class OrderItemSearch extends OrderItem
         // grid filtering conditions
         $query->andFilterWhere([
             'order_id' => $this->order_id,
-            'article_id' => $this->article_id,
+            'product_id' => $this->product_id,
             'qty' => $this->qty,
             'sell_price' => $this->sell_price,
         ]);

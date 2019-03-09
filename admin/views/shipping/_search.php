@@ -23,7 +23,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'shipping_company_id') ?>
 
-    <?= $form->field($model, 'status') ?>
+    <?= $form->field($model, 'state') ?>
 
     <?php // echo $form->field($model, 'data') ?>
 

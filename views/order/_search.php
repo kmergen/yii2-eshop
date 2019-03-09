@@ -19,7 +19,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'customer_id') ?>
 
-    <?= $form->field($model, 'status') ?>
+    <?= $form->field($model, 'state') ?>
 
     <?= $form->field($model, 'total') ?>
 
@@ -29,7 +29,7 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'ip') ?>
 
-    <?php // echo $form->field($model, 'comment') ?>
+    <?php // echo $form->field($model, 'notes') ?>
 
     <?php // echo $form->field($model, 'created_at') ?>
 
