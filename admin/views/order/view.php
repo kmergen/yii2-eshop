@@ -33,7 +33,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'state',
             'total',
             'invoice_address_id',
-            'data:ntext',
             'ip',
             'comment:ntext',
             'created_at',

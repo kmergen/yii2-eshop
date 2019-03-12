@@ -25,8 +25,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'invoice_address_id') ?>
 
-    <?php // echo $form->field($model, 'data') ?>
-
     <?php // echo $form->field($model, 'ip') ?>
 
     <?php // echo $form->field($model, 'notes') ?>

@@ -20,7 +20,6 @@ use kmergen\eshop\stripe\PaygateStripe;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
 
-
 class CheckoutController extends Controller
 {
 
@@ -57,7 +56,6 @@ class CheckoutController extends Controller
         ];
     }
 
-
     /**
      * Checkout for paying ad options
      * If creation is successful, the browser will be redirected to the 'view' page of the model.
@@ -66,8 +64,11 @@ class CheckoutController extends Controller
      */
     public function actionCheckout()
     {
-        if (($cart = Order::getCurrentCart()) === null) {
-            Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your cart is empty.'));
+        if (($cart = Order::getCurrentCart()) == null) {
+            Yii::$app->session->setFlash('info', Yii::t('eshop', 'There is no existing Cart.'));
+            return $this->goBack();
+        } elseif (empty($cart->items)) {
+            Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your Cart is empty.'));
             return $this->goBack();
         }
 
@@ -75,7 +76,7 @@ class CheckoutController extends Controller
         $request = Yii::$app->getRequest();
         $post = $request->post();
         $model = new CheckoutForm();
-       // $isOrderWithShipping = $cartContent['shipping'];
+        // $isOrderWithShipping = $cartContent['shipping'];
         $paymentModel = null;
 
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
@@ -95,14 +96,6 @@ class CheckoutController extends Controller
             $customer->email = Yii::$app->user->getIdentity()->email;
             $address = new Address();
         }
-
-        if (Cart::getOrderId() === null) {
-            $order = $this->createOrder($cartContent, $customer->id);
-            Cart::setOrderId($order->id);
-        } else {
-            $order = Order::find()->with('order_items')->where(['order_id' => Cart::getOrderId()]);
-        }
-
 
         if ($model->load($post)) {
             if (!$model->checkoutCanceled) {
@@ -124,7 +117,6 @@ class CheckoutController extends Controller
                         $paygate->on($paygate::EVENT_PAYMENT_DONE, [$this, 'paymentDone']);
                         $paygate->execute($order, $customer, $paygateParams);
                     }
-
                 } else { // Model not validate
                     Yii::$app->session->setFlash('warning', Yii::t('flash.checkoutModel.notValidate.OnServerSide'));
                     return $this->redirect([Yii::$app->session->get(Cart::LAST_URL)]);
@@ -172,7 +164,6 @@ class CheckoutController extends Controller
         return $this->redirect([$this->defaultAction]);
     }
 
-
     /**
      * This method is called after the payment is done.
      * @param $event kmergen\eshop\components\PaymentEvent
@@ -193,8 +184,6 @@ class CheckoutController extends Controller
         $paymentStatus->payment_id = $payment->id;
         $paymentStatus->status = $payment->status;
         $paymentStatus->insert(false);
-
-
     }
 
     /**

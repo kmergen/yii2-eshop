@@ -4,8 +4,6 @@ namespace kmergen\eshop\models;
 
 use Yii;
 use yii\base\Exception;
-use Product;
-use Order;
 
 /**
  * This is the model class for table "eshop_order_item".

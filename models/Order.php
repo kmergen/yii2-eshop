@@ -15,12 +15,10 @@ use yii\base\Exception;
  * @property string $status The order status.
  * @property string $total
  * @property int $invoice_address_id
- * @property string $data A serialized array of extra data.
  * @property string $ip Host IP address of the person paying for the order.
  * @property string $notes Order notes
  * @property string $created_at
  * @property string $updated_at
- *
  * @property Customer $customer
  * @property Address $invoiceAddress
  * @property OrderItem[] $eshopOrderItems
@@ -62,7 +60,7 @@ class Order extends \yii\db\ActiveRecord
             [['status', 'checkout_status', 'payment_status', 'shipping_status'], 'required'],
             [['customer_id', 'invoice_address_id'], 'integer'],
             [['total'], 'number'],
-            [['data', 'notes'], 'string'],
+            [['notes'], 'string'],
             [['status'], 'string', 'max' => 32],
             [['ip'], 'string', 'max' => 255],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
@@ -81,7 +79,6 @@ class Order extends \yii\db\ActiveRecord
             'status' => Yii::t('eshop', 'Status'),
             'total' => Yii::t('eshop', 'Total'),
             'invoice_address_id' => Yii::t('eshop', 'Invoice Address ID'),
-            'data' => Yii::t('eshop', 'Data'),
             'ip' => Yii::t('eshop', 'Ip'),
             'notes' => Yii::t('eshop', 'Comment'),
             'created_at' => Yii::t('eshop', 'Created At'),
@@ -89,6 +86,81 @@ class Order extends \yii\db\ActiveRecord
         ];
     }
 
+    /**
+     * Return the existing Cart or return a new one.
+     * A Cart in Eshop module is an instance of kmergen\eshop\models\Order with Order::STATUS_CART
+     * @return object;
+     */
+    public static function getCart()
+    {
+        if (($cart = self::getCurrentCart()) === null) {
+            $cart = Yii::createObject([
+                'class' => static::class,
+                'status' => self::STATUS_CART,
+                'checkout_status' => self::STATUS_CART,
+                'payment_status' => self::STATUS_CART,
+                'shipping_status' => self::STATUS_CART,
+            ]);
+            $cart->save();
+            Yii::$app->session->set('eshop.cart', $cart->id);
+        }
+        return $cart;
+    }
+
+    /**
+     * Return null or the current Cart kmergen\eshop\models\Order
+     * @return mixed
+     * @throws yii\base\Exception
+     */
+    public static function getCurrentCart()
+    {
+        if (($cartId = Yii::$app->session->get('eshop.cart')) === null) {
+            return null;
+        } else {
+            //if (($order = static::find()->with('items')->where(['id' => $orderId])->one()) !== null) {
+            if (($cart = static::findOne($cartId)) !== null) {
+                return $cart;
+            } else {
+                $msg = 'Order Id is set in session, but cannot get order Model. Order Id: ' . $cartId;
+                Yii::error($msg, __METHOD__);
+                throw new Exception($msg);
+            }
+        }
+    }
+
+    /**
+     * Delete the current Cart if it exists.
+     * @return void
+     */
+    public function deleteCart()
+    {
+        if (static::getCurrentCart() !== null) {
+            $this->delete();
+            Yii::$app->session->remove('eshop.cart');
+        }
+    }
+
+    /**
+     * Delete all items from the current Cart.
+     * @return void
+     */
+    public function clearCart()
+    {
+        if (static::getCurrentCart() !== null) {
+            if (!empty($this->items)) {
+                foreach ($this->items as $item) {
+                    $this->unlink('items', $item, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Return kmergen\eshop\models\Product
+     * @param integer $id The Product Id
+     * @return object kmergen\eshop\models\Product
+     * @throws Exception
+     */
     protected function getProduct($id)
     {
         if (($product = Product::findOne($id)) === null) {
@@ -152,18 +224,33 @@ class Order extends \yii\db\ActiveRecord
     public function removeItem($id)
     {
         if (($item = $this->getItem($id)) !== null) {
-            $this->unlink('items', $item);
+            $this->unlink('items', $item, true);
         }
     }
 
     /**
-     * Return kmergen\eshop\models\Product Object or null if it not exist
+     * Return kmergen\eshop\models\OrderItem Object or null if it not exist
      * @param $id integer kmergen\eshop\models\Product Id
      * @return mixed
      */
     public function getItem($id)
     {
         return isset($this->items[$id]) ? $this->items[$id] : null;
+    }
+
+    /**
+     * Return true if products in Cart that needs shipping, otherwise false
+     * @return boolean
+     */
+    public function needShipping()
+    {
+        $productIds = array_keys($this->items);
+        $rows = Product::find()
+            ->asArray()
+            ->innerJoin('eshop_product_category', '`eshop_product`.`category_id` = `eshop_product_category`.`id`')
+            ->where(['eshop_product.id' => $productIds, 'eshop_product_category.shipping' => 1])
+            ->all();
+        return empty($rows) ? false : true;
     }
 
     /**

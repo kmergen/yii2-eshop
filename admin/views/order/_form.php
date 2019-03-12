@@ -20,8 +20,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'invoice_address_id')->textInput() ?>
 
-    <?= $form->field($model, 'data')->textarea(['rows' => 6]) ?>
-
     <?= $form->field($model, 'ip')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'comment')->textarea(['rows' => 6]) ?>
