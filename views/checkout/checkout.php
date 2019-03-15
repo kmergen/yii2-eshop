@@ -95,7 +95,7 @@ CheckoutAsset::register($this);
                         <table class="table">
                             <thead>
                             <tr>
-                                <th scope="col"><?= Yii::t('app', 'Article') ?></th>
+                                <th scope="col"><?= Yii::t('app', 'Product') ?></th>
                                 <th scope="col"><?= Yii::t('app', 'Price') ?></th>
                             </tr>
                             </thead>
@@ -104,15 +104,15 @@ CheckoutAsset::register($this);
                                 <td><?= Yii::t('app', 'Basic Ad') ?></td>
                                 <td><?= Yii::$app->getFormatter()->asCurrency(0) ?></td>
                             </tr>
-                            <?php foreach ($cartContent['items'] as $item) : ?>
+                            <?php foreach ($cart->items as $item) : ?>
                                 <tr>
-                                    <td><?= $item['title'] ?></td>
-                                    <td><?= Yii::$app->getFormatter()->asCurrency($item['sell_price']) ?></td>
+                                    <td><?= $item->title ?></td>
+                                    <td><?= Yii::$app->getFormatter()->asCurrency($item->sell_price) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             <tr>
                                 <td><strong><?= Yii::t('app', 'Total price') ?></strong></td>
-                                <td><strong><?= Yii::$app->getFormatter()->asCurrency($cartContent['total']) ?></strong>
+                                <td><strong><?= Yii::$app->getFormatter()->asCurrency($cart->total) ?></strong>
                                 </td>
                             </tr>
                             </tbody>
@@ -144,7 +144,7 @@ CheckoutAsset::register($this);
         <div class="col-6">
             <div class="form-group form-actions">
                 <button id="btnCancel" class="btn btn-link" type="reset" name="btnCancel">
-                    <span class="small"><< <?= Yii::t('app', 'view.ad-checkout.abortButtonText') ?></span>
+                    <span class="small"><< <?= Yii::t('app', 'view.ad-checkout.cancelButtonText') ?></span>
                 </button>
             </div>
         </div>

@@ -100,6 +100,7 @@ class Order extends \yii\db\ActiveRecord
                 'checkout_status' => self::STATUS_CART,
                 'payment_status' => self::STATUS_CART,
                 'shipping_status' => self::STATUS_CART,
+                'total' => 0,
             ]);
             $cart->save();
             Yii::$app->session->set('eshop.cart', $cart->id);
@@ -151,6 +152,7 @@ class Order extends \yii\db\ActiveRecord
                 foreach ($this->items as $item) {
                     $this->unlink('items', $item, true);
                 }
+                $this->updateAttributes(['total' => 0]);
             }
         }
     }
@@ -189,6 +191,7 @@ class Order extends \yii\db\ActiveRecord
                 $item->qty = ($product->max_qty >= $qty) ? $qty : $product->max_qty;
                 $item->sell_price = $product->sell_price;
                 $this->link('items', $item);
+                $this->recalculateCart();
             }
         } else {
             $this->updateItem($id, $qty);
@@ -214,6 +217,7 @@ class Order extends \yii\db\ActiveRecord
                     $item->updateAttributes(['qty' => $item->qty]);
                 }
             }
+            $this->recalculateCart();
         }
     }
 
@@ -225,7 +229,20 @@ class Order extends \yii\db\ActiveRecord
     {
         if (($item = $this->getItem($id)) !== null) {
             $this->unlink('items', $item, true);
+            $this->recalculateCart();
         }
+    }
+
+    /**
+     * Recalculate the cart total value after cart update
+     */
+    public function recalculateCart()
+    {
+        $price = 0;
+        foreach ($this->items as $item) {
+            $price += $item->sell_price * $item->qty;
+        }
+        $this->updateAttributes(['total' => $price]);
     }
 
     /**

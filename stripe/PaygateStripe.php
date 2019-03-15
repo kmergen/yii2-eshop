@@ -10,13 +10,11 @@ namespace kmergen\eshop\stripe;
 
 
 use yii\base\Component;
-use yii\helpers\Url;
-use yii\helpers\ArrayHelper;
 use yii\base\Exception;
 use Yii;
 use kmergen\eshop\components\PaymentEvent;
 use kmergen\eshop\models\PaymentStatus;
-use kmergen\eshop\helpers\Cart;
+use kmergen\eshop\models\Order;
 
 
 class PaygateStripe extends Component
@@ -51,9 +49,9 @@ class PaygateStripe extends Component
     public function createIntent()
     {
         \Stripe\Stripe::setApiKey($this->secretKey);
-        $am = (Cart::getTotal() * 100);
+        $cart = Order::getCurrentCart();
         $intent = \Stripe\PaymentIntent::create([
-            "amount" => (Cart::getTotal() * 100), // eurocent
+            "amount" => ($cart->total * 100), // eurocent
             "currency" => $this->currency,
             "payment_method_types" => ["card"],
         ]);

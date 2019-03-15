@@ -45,13 +45,13 @@ class Module extends \yii\base\Module
             'paypal_rest' => [
                 'modelClass' => 'kmergen\eshop\paypal\models\PaypalRest',
                 'label' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
-                'paneurl' => Url::to(['/shop/paypal-rest/pane']),
+                'paneurl' => Url::to(['/eshop/paypal-rest/pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\paypal\PaygatePaypalRest',
                     'clientId' => 'AQIH9zYY-IqXG40tHZHq8VXwf4SMP3WhKubahnPxM-_-aBWcWVvVPGVWDroxWMNZNdUI5A7JQIgkui8z',
                     'clientSecret' => 'EDebRFO3vM_bRG6pHquCHB5VZaTT7TWczsr-edco3y0Ic4PDKYxfqUNw7ygR8wiKdNXjtpketf3KEQCz',
-                    'returnUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/shop/checkout/paypal-success']),
-                    'cancelUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/shop/checkout/paypal-cancel']),
+                    'returnUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/eshop/checkout/paypal-success']),
+                    'cancelUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/eshop/checkout/paypal-cancel']),
                     'config' => [
                         'mode' => 'sandbox',
                     ],
@@ -61,7 +61,7 @@ class Module extends \yii\base\Module
             'stripe_card' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
                 'label' => 'Credit Card ' . Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
-                'paneurl' => Url::to(['/shop/stripe/card-pane']),
+                'paneurl' => Url::to(['/eshop/stripe/card-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\PaygateStripe',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',
@@ -71,7 +71,7 @@ class Module extends \yii\base\Module
             'stripe_sepa' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Sepa',
                 'label' => 'Lastschrift ' . Html::img('@web/themes/basic/img/sepa_grey_h12.png'),
-                'paneurl' => Url::to(['/shop/stripe/sepa-pane']),
+                'paneurl' => Url::to(['/eshop/stripe/sepa-pane']),
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\PaygateStripe',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',

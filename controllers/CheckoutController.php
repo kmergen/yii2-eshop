@@ -19,6 +19,7 @@ use kmergen\eshop\models\OrderItem;
 use kmergen\eshop\stripe\PaygateStripe;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
+use kmergen\eshop\components\CheckoutEvent;
 
 class CheckoutController extends Controller
 {
@@ -26,7 +27,7 @@ class CheckoutController extends Controller
     /**
      * @event Event an event that is triggered when the checkout action aborts.
      */
-    const EVENT_CHECKOUT_ABORT = 'checkoutCanceled';
+    const EVENT_CHECKOUT_CANCELED = 'checkoutCanceled';
 
     /**
      * @event Event an event that is triggered after the payment.
@@ -103,7 +104,7 @@ class CheckoutController extends Controller
                     $address->load($post);
                     $address->save();
 
-                    if ($isOrderWithShipping) {
+                    if ($cart->needShipping) {
                         $shipping = new Shipping();
                         // @todo go further with the shipping model and save it.
                     }
@@ -119,17 +120,20 @@ class CheckoutController extends Controller
                     }
                 } else { // Model not validate
                     Yii::$app->session->setFlash('warning', Yii::t('flash.checkoutModel.notValidate.OnServerSide'));
-                    return $this->redirect([Yii::$app->session->get(Cart::LAST_URL)]);
+                    return $this->goBack();
                 }
             } else {
-                Yii::$app->session->set(Cart::IS_CHECKOUT_CANCELED, true);
-                return $this->redirect([Yii::$app->session->get(Cart::LAST_URL)]);
+                Yii::info('Checkout canceled with Cancel Button', __METHOD__);
+                $event = new CheckoutEvent();
+                $event->action = 'Checkout Canceled with Cancel Button';
+                $this->trigger(self::EVENT_CHECKOUT_CANCELED, $event);
+                return $this->goBack();
             }
             $model->paymentMethod = null;
         }
 
         return $this->render('checkout', [
-            'cartContent' => $cartContent,
+            'cart' => $cart,
             'module' => $module,
             'model' => $model,
             'paymentModel' => $paymentModel,
