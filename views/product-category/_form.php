@@ -16,7 +16,6 @@ use yii\bootstrap4\ActiveForm;
 
     <?= $form->field($model, 'parent')->textInput() ?>
 
-    <?= $form->field($model, 'shipping')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>

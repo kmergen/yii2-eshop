@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
-/* @var $model kmergen\eshop\models\OrderItem */
+/* @var $model kmergen\eshop\models\OrderProduct */
 
 $this->title = $model->title;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Order Items'), 'url' => ['index']];
@@ -34,7 +34,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'sku',
             'qty',
             'sell_price',
-            'data:ntext',
         ],
     ]) ?>
 

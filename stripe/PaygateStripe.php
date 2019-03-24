@@ -14,7 +14,7 @@ use yii\base\Exception;
 use Yii;
 use kmergen\eshop\components\PaymentEvent;
 use kmergen\eshop\models\PaymentStatus;
-use kmergen\eshop\models\Order;
+use kmergen\eshop\models\Cart;
 
 
 class PaygateStripe extends Component
@@ -49,7 +49,7 @@ class PaygateStripe extends Component
     public function createIntent()
     {
         \Stripe\Stripe::setApiKey($this->secretKey);
-        $cart = Order::getCurrentCart();
+        $cart = Cart::getCurrentCart();
         $intent = \Stripe\PaymentIntent::create([
             "amount" => ($cart->total * 100), // eurocent
             "currency" => $this->currency,

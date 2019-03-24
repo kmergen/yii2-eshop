@@ -5,12 +5,12 @@ namespace kmergen\eshop\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use kmergen\eshop\models\OrderItem;
+use kmergen\eshop\models\OrderProduct;
 
 /**
- * OrderItemSearch represents the model behind the search form of `kmergen\eshop\models\OrderItem`.
+ * OrderProductSearch represents the model behind the search form of `kmergen\eshop\models\OrderProduct`.
  */
-class OrderItemSearch extends OrderItem
+class OrderProductSearch extends OrderProduct
 {
     /**
      * {@inheritdoc}
@@ -19,7 +19,7 @@ class OrderItemSearch extends OrderItem
     {
         return [
             [['order_id', 'product_id', 'qty'], 'integer'],
-            [['title', 'sku', 'data'], 'safe'],
+            [['title', 'sku'], 'safe'],
             [['sell_price'], 'number'],
         ];
     }
@@ -42,7 +42,7 @@ class OrderItemSearch extends OrderItem
      */
     public function search($params)
     {
-        $query = OrderItem::find();
+        $query = OrderProduct::find();
 
         // add conditions that should always apply here
 
@@ -67,8 +67,7 @@ class OrderItemSearch extends OrderItem
         ]);
 
         $query->andFilterWhere(['like', 'title', $this->title])
-            ->andFilterWhere(['like', 'sku', $this->sku])
-            ->andFilterWhere(['like', 'data', $this->data]);
+            ->andFilterWhere(['like', 'sku', $this->sku]);
 
         return $dataProvider;
     }

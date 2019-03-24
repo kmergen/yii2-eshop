@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model kmergen\eshop\models\OrderItem */
+/* @var $model kmergen\eshop\models\OrderProduct */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
@@ -24,7 +24,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'sell_price')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'data')->textarea(['rows' => 6]) ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('eshop', 'Save'), ['class' => 'btn btn-success']) ?>

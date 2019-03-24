@@ -130,9 +130,9 @@ CheckoutAsset::register($this);
         </div>
         <div class="col-md-6">
             <?php if ($address !== null): ?>
-                <?= $form->field($address, 'firstname')->textInput(['maxlength' => true]) ?>
-                <?= $form->field($address, 'lastname')->textInput(['maxlength' => true]) ?>
+                <?= $form->field($address, 'fullname')->textInput(['maxlength' => true]) ?>
                 <?= $form->field($address, 'street')->textInput(['maxlength' => true]) ?>
+                <?= $form->field($address, 'postcode')->textInput(['maxlength' => true]) ?>
                 <?= $form->field($address, 'city')->textInput(['maxlength' => true]) ?>
             <?php endif; ?>
         </div>

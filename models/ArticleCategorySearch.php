@@ -18,7 +18,7 @@ class ArticleCategorySearch extends ArticleCategory
     public function rules()
     {
         return [
-            [['id', 'parent', 'shipping'], 'integer'],
+            [['id', 'parent'], 'integer'],
             [['name'], 'safe'],
         ];
     }
@@ -61,7 +61,6 @@ class ArticleCategorySearch extends ArticleCategory
         $query->andFilterWhere([
             'id' => $this->id,
             'parent' => $this->parent,
-            'shipping' => $this->shipping,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name]);

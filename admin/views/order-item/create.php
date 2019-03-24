@@ -4,7 +4,7 @@ use yii\helpers\Html;
 
 
 /* @var $this yii\web\View */
-/* @var $model kmergen\eshop\models\OrderItem */
+/* @var $model kmergen\eshop\models\OrderProduct */
 
 $this->title = Yii::t('eshop', 'Create Order Item');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('eshop', 'Order Items'), 'url' => ['index']];

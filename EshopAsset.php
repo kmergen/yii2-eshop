@@ -13,7 +13,7 @@ class EshopAsset extends AssetBundle
 		'eshop.min.js',
 	];
 	public $css = [
-        'eshop.min.css'
+        'eshop.min.css',
 	];
 	public $depends = [
 		//'app\assets\AppAsset',
@@ -27,10 +27,10 @@ class EshopAsset extends AssetBundle
         parent::init();
         if (YII_DEBUG) {
             $this->js = [
-                'eshop.js'
+                'eshop.js',
             ];
             $this->css = [
-                'eshop.css'
+                'eshop.css',
             ];
         }
     }

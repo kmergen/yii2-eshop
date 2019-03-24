@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 
 /* @var $this yii\web\View */
-/* @var $searchModel kmergen\eshop\models\OrderItemSearch */
+/* @var $searchModel kmergen\eshop\models\OrderProductSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = Yii::t('eshop', 'Order Items');

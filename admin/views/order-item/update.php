@@ -3,7 +3,7 @@
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
-/* @var $model kmergen\eshop\models\OrderItem */
+/* @var $model kmergen\eshop\models\OrderProduct */
 
 $this->title = Yii::t('eshop', 'Update Order Item: ' . $model->title, [
     'nameAttribute' => '' . $model->title,

@@ -3,16 +3,16 @@
 namespace kmergen\eshop\controllers;
 
 use Yii;
-use kmergen\eshop\models\OrderItem;
-use kmergen\eshop\models\OrderItemSearch;
+use kmergen\eshop\models\OrderProduct;
+use kmergen\eshop\models\OrderProductSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * OrderItemController implements the CRUD actions for OrderItem model.
+ * OrderProductController implements the CRUD actions for OrderProduct model.
  */
-class OrderItemController extends Controller
+class OrderProductController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -30,12 +30,12 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Lists all OrderItem models.
+     * Lists all OrderProduct models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new OrderItemSearch();
+        $searchModel = new OrderProductSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -45,7 +45,7 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Displays a single OrderItem model.
+     * Displays a single OrderProduct model.
      * @param integer $order_id
      * @param integer $product_id
      * @return mixed
@@ -59,13 +59,13 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Creates a new OrderItem model.
+     * Creates a new OrderProduct model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new OrderItem();
+        $model = new OrderProduct();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'order_id' => $model->order_id, 'product_id' => $model->product_id]);
@@ -77,7 +77,7 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Updates an existing OrderItem model.
+     * Updates an existing OrderProduct model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $order_id
      * @param integer $product_id
@@ -98,7 +98,7 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Deletes an existing OrderItem model.
+     * Deletes an existing OrderProduct model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $order_id
      * @param integer $product_id
@@ -113,16 +113,16 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Finds the OrderItem model based on its primary key value.
+     * Finds the OrderProduct model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $order_id
      * @param integer $product_id
-     * @return OrderItem the loaded model
+     * @return OrderProduct the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($order_id, $product_id)
     {
-        if (($model = OrderItem::findOne(['order_id' => $order_id, 'product_id' => $product_id])) !== null) {
+        if (($model = OrderProduct::findOne(['order_id' => $order_id, 'product_id' => $product_id])) !== null) {
             return $model;
         }
 

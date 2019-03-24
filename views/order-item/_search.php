@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model kmergen\eshop\models\OrderItemSearch */
+/* @var $model kmergen\eshop\models\OrderProductSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
@@ -27,7 +27,6 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'sell_price') ?>
 
-    <?php // echo $form->field($model, 'data') ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('eshop', 'Search'), ['class' => 'btn btn-primary']) ?>

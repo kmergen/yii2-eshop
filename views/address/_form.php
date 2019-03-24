@@ -1,22 +1,30 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\bootstrap4\ActiveForm;
+use kmergen\eshop\CheckoutAsset;
+use tigrov\intldata\Country;
 
 /* @var $this yii\web\View */
 /* @var $model kmergen\eshop\models\Address */
 /* @var $form yii\widgets\ActiveForm */
+CheckoutAsset::register($this);
+
+$js = <<<JS
+var floatlabels = new FloatLabels( 'form', {
+style: 2
+});
+JS;
+$this->registerJs($js,  $this::POS_END);
 ?>
 
 <div class="address-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+            'enableClientValidation' => false,
+    ]); ?>
 
-    <?= $form->field($model, 'customer_id')->textInput() ?>
-
-    <?= $form->field($model, 'firstname')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'lastname')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'fullname')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'company')->textInput(['maxlength' => true]) ?>
 
@@ -24,9 +32,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'city')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'province')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'province')->textarea(['rows' => 5]) ?>
 
-    <?= $form->field($model, 'country_code')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'country')->dropDownList(Country::names()) ?>
+
 
     <?= $form->field($model, 'phone1')->textInput(['maxlength' => true]) ?>
 

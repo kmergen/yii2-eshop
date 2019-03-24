@@ -9,13 +9,13 @@ use kmergen\eshop\models\Shipping;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
-use kmergen\eshop\helpers\Cart;
 use yii\web\HttpException;
 use kmergen\eshop\models\CheckoutForm;
 use kmergen\eshop\models\Address;
 use kmergen\eshop\models\Customer;
+use kmergen\eshop\models\Cart;
 use kmergen\eshop\models\Order;
-use kmergen\eshop\models\OrderItem;
+use kmergen\eshop\models\OrderProduct;
 use kmergen\eshop\stripe\PaygateStripe;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
@@ -65,7 +65,7 @@ class CheckoutController extends Controller
      */
     public function actionCheckout()
     {
-        if (($cart = Order::getCurrentCart()) == null) {
+        if (($cart = Cart::getCurrentCart()) === null) {
             Yii::$app->session->setFlash('info', Yii::t('eshop', 'There is no existing Cart.'));
             return $this->goBack();
         } elseif (empty($cart->items)) {
@@ -77,8 +77,8 @@ class CheckoutController extends Controller
         $request = Yii::$app->getRequest();
         $post = $request->post();
         $model = new CheckoutForm();
-        // $isOrderWithShipping = $cartContent['shipping'];
         $paymentModel = null;
+        $needShipping = $cart->needShipping();
 
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
             $customer->email = Yii::$app->user->getIdentity()->email;
@@ -204,7 +204,7 @@ class CheckoutController extends Controller
         $order->save();
         foreach ($cartContent['items'] as $v) {
             if ($v['qty'] > 0) {
-                $orderItem = new OrderItem();
+                $orderItem = new OrderProduct();
                 $orderItem->product_id = $v['id'];
                 $orderItem->title = $v['title'];
                 $orderItem->sku = $v['sku'];

@@ -18,7 +18,7 @@ use yii\base\Exception;
  *
  * @property Order $order
  */
-class OrderItem extends \yii\db\ActiveRecord
+class OrderProduct extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -37,7 +37,6 @@ class OrderItem extends \yii\db\ActiveRecord
             [['order_id', 'product_id', 'qty', 'sell_price'], 'required'],
             [['order_id', 'product_id', 'qty'], 'integer'],
             [['sell_price'], 'number'],
-            [['data'], 'string'],
             [['title', 'sku'], 'string', 'max' => 255],
             [['order_id', 'product_id'], 'unique', 'targetAttribute' => ['order_id', 'product_id']],
             [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
@@ -56,7 +55,6 @@ class OrderItem extends \yii\db\ActiveRecord
             'sku' => Yii::t('app', 'Sku'),
             'qty' => Yii::t('app', 'Qty'),
             'sell_price' => Yii::t('app', 'Sell Price'),
-            'data' => Yii::t('app', 'Data'),
         ];
     }
 

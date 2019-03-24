@@ -21,7 +21,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'parent') ?>
 
-    <?= $form->field($model, 'shipping') ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('eshop', 'Search'), ['class' => 'btn btn-primary']) ?>
