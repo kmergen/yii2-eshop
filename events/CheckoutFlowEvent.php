@@ -9,6 +9,7 @@
 namespace kmergen\eshop\events;
 
 use yii\base\Event;
+use yii\helpers\Url;
 
 /**
  * PaymentEvent
@@ -26,19 +27,19 @@ class CheckoutFlowEvent extends Event
     public $initiator;
 
     /**
-     * @var $redirectUrl string The url where the user should be redirected after checkout is complete
+     * @var $redirectUrl string|array The url where the user should be redirected after checkout is complete
      */
-    public $redirectUrl = '/eshop/checkout/complete';
+    public $redirectUrl = ['/eshop/checkout/complete'];
 
     /**
-     * @var $redirectParams array The params to apply on [[$redirectUrl]]
+     * @var bool Is an email already sent.
      */
-    public $redirectParams = [];
+    public $emailSent = false;
 
     /**
-     * @var bool Is a email message already sent.
+     * @var array A flash message to show on the redirected page. e.g. ['success', 'Message to show']
      */
-    public $messageSent = false;
+    public $flash;
 
     /**
      * @var $payment object The kmergen\eshop\models\Payment or null if it is not created yet.
@@ -50,7 +51,8 @@ class CheckoutFlowEvent extends Event
      */
     public $order;
 
-    public function getRedirectUrl() {
-        return \array_merge((array)$this->redirectUrl, $this->redirectParams);
+    public function getRedirectUrl()
+    {
+        return Url::to($this->redirectUrl);
     }
 }

@@ -77,7 +77,7 @@ class CheckoutController extends Controller
         $needShipping = $cart->needShipping();
 
         // Only for testing
-        $paypalQuickApproval = true;
+        $paypalQuickApproval = false;
 
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
             $customer->email = Yii::$app->user->getIdentity()->email;
@@ -246,10 +246,10 @@ class CheckoutController extends Controller
         $event->order = $order;
         $event->payment = $payment;
         $event->initiator = __METHOD__;
-        $event->redirectParams = ['id' => $order->id];
+        $event->redirectUrl = ['complete', 'id' => $order->id];
         //Yii::endProfile('CheckoutFlow');
         $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
-        if (!$event->messageSent) {
+        if (!$event->emailSent) {
             $order = $event->order;
             $customer = $order->customer;
             $mailer = Yii::$app->getMailer();
@@ -263,6 +263,9 @@ class CheckoutController extends Controller
                 ->setTo($customer->email)
                 ->setSubject(Yii::t('eshop', 'Your order from our Shop'))
                 ->send();
+        }
+        if (!empty($event->flash)) {
+            Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
         }
         return $event;
     }
