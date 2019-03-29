@@ -30,6 +30,7 @@ use yii\helpers\ArrayHelper;
 use yii\base\Exception;
 use Yii;
 use kmergen\eshop\components\PaymentEvent;
+use kmergen\eshop\models\Cart;
 
 class PaygatePaypalRest extends Component
 {
@@ -43,15 +44,12 @@ class PaygatePaypalRest extends Component
 
     private $_apiContext;
 
-    const EVENT_PAYMENT_DONE = 'payment_done';
-
     // API Context
     // Use an ApiContext object to authenticate API calls.
     // The clientId and clientSecret for the OAuthTokenCredential class
     // can be retrieved from developer.paypal.com
     function init()
     {
-
         // Set _apiContext
         $this->_apiContext = new ApiContext(
             new OAuthTokenCredential(
@@ -88,7 +86,14 @@ class PaygatePaypalRest extends Component
         }
     }
 
-    public function execute($order, $customer, $params = null)
+    /**
+     * Creates a new PayPal Payment. This function is called from Checkout Controller if the Payment Method is paypal_rest.
+     * @param $cart
+     * @param $customer
+     * @param null $params
+     * @return \yii\web\Response
+     */
+    public function execute($cart, $customer, $params = null)
     {
         // Create the payment
         // Set the web-profile-experience @todo Set some profiles permanent.
@@ -117,31 +122,36 @@ class PaygatePaypalRest extends Component
         // Set the payer
         $payer = new Payer();
         $payer->setPaymentMethod('paypal');
-        $orderList = [];
-        foreach ($order->orderItems as $orderItem) {
+        $cartList = [];
+        foreach ($cart->items as $cartItem) {
             $item = new Item();
-            $item->setName($orderItem->title)
+            $item->setName($cartItem->title)
                 ->setCurrency($this->currency)
-                ->setQuantity($orderItem->qty)
-                ->setPrice(round($orderItem->sell_price, 2));
-            $orderList[] = $item;
+                ->setQuantity($cartItem->qty)
+                ->setPrice(round($cartItem->sell_price, 2));
+            $cartList[] = $item;
         }
         $itemList = new ItemList();
-        $itemList->setItems($orderList);
+        $itemList->setItems($cartList);
 
         $details = new Details();
         //$details->setShipping('0.00');
-        $details->setSubtotal($order->total);
+        $details->setSubtotal($cart->total);
         $amount = new Amount();
         $amount->setCurrency($this->currency)
-            ->setTotal($order->total)
+            ->setTotal($cart->total)
             ->setDetails($details);
 
+        // Set the transaction
         $transaction = new Transaction();
+        // $invoiceNumber = $this->config['mode'] === 'sandbox' ? \uniqid() : $cart->id;
+        $custom = $cart->id;
         $transaction->setAmount($amount)
-            ->setItemList($itemList);
-        //  ->setDescription('Anzeigeoptionen')
-        //  ->setInvoiceNumber(uniqid());
+            ->setItemList($itemList)
+           // ->setInvoiceNumber($invoiceNumber) // We set the Cart Id as our invoice Number. Paypal only allow to use this number once.
+            ->setCustom($custom);
+            // ->setDescription('Anzeigeoptionen')
+
 
         $redirectUrls = new RedirectUrls();
         $redirectUrls->setReturnUrl($this->returnUrl)
@@ -154,7 +164,6 @@ class PaygatePaypalRest extends Component
             ->setTransactions([$transaction])
             ->setExperienceProfileId($createProfile->getId());
 
-
         try {
             $payment->create($this->_apiContext);
             //return $payment;
@@ -165,43 +174,20 @@ class PaygatePaypalRest extends Component
             Yii::$app->response->format = \yii\web\Response::FORMAT_HTML;
             // Yii::$app->response->data = $ex->getData();
         }
-
     }
 
+    /**
+     * Execute the created PayPal Payment.
+     * @return Payment
+     */
     public function doPayment()
     {
         $paymentId = $_REQUEST['paymentId'];
         $payment = Payment::get($paymentId, $this->_apiContext);
         $execution = new PaymentExecution();
         $execution->setPayerId($_REQUEST['PayerID']);
-
-        $transaction = new Transaction();
-
-        $amount = new Amount();
-
-        $details = new Details();
-        $orderTotal = Yii::$app->session->get('orderTotal');
-        $details->setSubtotal($orderTotal);
-        $amount->setCurrency($this->currency);
-        $amount->setTotal($orderTotal);
-        $amount->setDetails($details);
-
-        $transaction->setAmount($amount);
+        $transaction = $payment->transactions[0];
         $execution->addTransaction($transaction);
-
-        try {
-            $payment->execute($execution, $this->_apiContext);
-            $paymentCheck = Payment::get($paymentId, $this->_apiContext);
-            $event = new PaymentEvent();
-            $event->paymentInfo = ['paymentProvider' => 'stripe', 'orderId' => 7777];
-            $this->trigger(self::EVENT_PAYMENT_DONE, $event);
-        } catch (\Exception $ex) {
-            Yii::error([
-                'Error Message' => $ex->getMessage(),
-                'Error Data' => $ex->getData(),
-            ], 'paypal');
-
-        }
-        return $payment;
+        return $payment->execute($execution, $this->_apiContext);
     }
 }

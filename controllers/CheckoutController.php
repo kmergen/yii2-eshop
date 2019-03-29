@@ -4,7 +4,6 @@ namespace kmergen\eshop\controllers;
 
 use DeepCopy\f001\A;
 use kmergen\eshop\components\PaymentEvent;
-use kmergen\eshop\interfaces\PaymentEventInterface;
 use kmergen\eshop\models\Shipping;
 use Yii;
 use yii\filters\VerbFilter;
@@ -19,7 +18,8 @@ use kmergen\eshop\models\OrderProduct;
 use kmergen\eshop\stripe\PaygateStripe;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
-use kmergen\eshop\components\CheckoutEvent;
+use yii\base\Event;
+use kmergen\eshop\events\CheckoutFlowEvent;
 
 class CheckoutController extends Controller
 {
@@ -30,14 +30,10 @@ class CheckoutController extends Controller
     const EVENT_CHECKOUT_CANCELED = 'checkoutCanceled';
 
     /**
-     * @event Event an event that is triggered after the payment.
+     * @event  This event is triggered after a checkout is completed.
+     * This means the payment is done, the order and shipping (if necessary) is created.
      */
-    const EVENT_AFTER_PAYMENT = 'afterPayment';
-
-    /**
-     * array The params which we can attach to an event handler.
-     */
-    public $params = [];
+    const EVENT_CHECKOUT_COMPLETE = 'checkoutComplete';
 
     /**
      * @inheritdoc
@@ -80,6 +76,9 @@ class CheckoutController extends Controller
         $paymentModel = null;
         $needShipping = $cart->needShipping();
 
+        // Only for testing
+        $paypalQuickApproval = true;
+
         if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
             $customer->email = Yii::$app->user->getIdentity()->email;
             $customer->updateAttributes(['email']);
@@ -98,25 +97,38 @@ class CheckoutController extends Controller
             $address = new Address();
         }
 
+        //only for testing
+        $address->fullname = "Peter Pan";
+        $address->street = "Andeler Str. 45";
+        $address->postcode = "54516";
+        $address->city = "Wittlich";
+
         if ($model->load($post)) {
             if (!$model->checkoutCanceled) {
                 if ($model->validate()) { // We have client validation enabled. The model should validate, if not there is a manipulation on user input and we go back to returnUrl
+                    $address = new Address(); // Create a new address for each order, not override an existing one.
                     $address->load($post);
                     $address->save();
 
-                    if ($cart->needShipping) {
+                    if ($cart->needShipping()) {
                         $shipping = new Shipping();
                         // @todo go further with the shipping model and save it.
                     }
 
                     //Do the payment
-                    if ($model['paymentMethod'] !== 'stripe_card') {
+
+                    if ($model['paymentMethod'] === 'stripe_card') {
+                        // @todo Stripe card were handled on client side. We must evaluate the stripe webhooks, if the
+                        // payment was successfully or not.
+                    } elseif ($paypalQuickApproval) {
+                        $event = $this->testCheckoutFlow('paypal_rest');
+                        return $this->redirect($event->getRedirectUrl());
+                    } elseif ($model->paymentMethod === 'paypal_rest') {
                         $paygate = Yii::createObject(
                             $module->paymentMethods[$model['paymentMethod']]['paygate']
                         );
                         $paygateParams = [];
-                        $paygate->on($paygate::EVENT_PAYMENT_DONE, [$this, 'paymentDone']);
-                        $paygate->execute($order, $customer, $paygateParams);
+                        $paygate->execute($cart, $customer, $paygateParams);
                     }
                 } else { // Model not validate
                     Yii::$app->session->setFlash('warning', Yii::t('flash.checkoutModel.notValidate.OnServerSide'));
@@ -142,18 +154,77 @@ class CheckoutController extends Controller
     }
 
     /**
-     * A user is redirected to this action after after successfully initiate the paypal checkout.
+     * The checkout is completed and the user see the Thank you page
+     * @param $id integer The order Id of this Checkout Flow
+     * @return resource
+     */
+    public function actionComplete($id)
+    {
+        $order = Order::findOne($id);
+        return $this->render('complete', ['order' => $order]);
+    }
+
+    /**
+     * A user is redirected to this action after successfully initiate the paypal checkout.
      * This means the user has clicked the "Pay now" button in the PayPal window.
+     * We keep the function here in this controller as initiator of the checkout flow.
+     * This function initiate:
+     *  - Payment creation
+     *  - Payment initiate order creation
+     *
      * @return mixed
      */
-    public function actionPaypalSuccess()
+    public function actionPaypalApproval()
     {
-        $paymentId = $_REQUEST['paymentId'];
-        $token = $_REQUEST['token'];
-        $payerId = $_REQUEST['PayerID'];
-        $paygate = Yii::createObject($this->module->paymentMethods['paypal_rest']['paygate']);
-        $paygate->on($paygate::EVENT_PAYMENT_DONE, [$this, 'paymentDone']);
-        $payment = $paygate->doPayment();
+        try {
+            $paygate = Yii::createObject($this->module->paymentMethods['paypal_rest']['paygate']);
+            $payment = $paygate->doPayment();
+
+            if ($payment->state === 'success' || $payment->state === 'approved') {
+                $transaction = $payment->transactions[0];
+                $relatedResources = $transaction->getRelatedResources();
+                $relatedResource = $relatedResources[0];
+                $sale = $relatedResource->getSale();
+                // Create new Payment Model
+                Yii::beginProfile('CheckoutFlow', 'checkout');
+                $model = new Payment();
+                $model->cart_id = $transaction->getCustom();
+                $model->transaction_id = $sale->getId();
+                $model->payment_method = 'paypal_rest';
+                $model->status = Payment::STATUS_COMPLETE;
+                $model->data = \serialize($payment);
+                $model->save();
+
+                $event = $this->completeCheckout($model);
+                return $this->redirect($event->getRedirectUrl());
+//                $event = new CheckoutFlowEvent();
+//                $event->payment = $model;
+//                $event->initiator = __METHOD__;
+//                $this->trigger(self::EVENT_CHECKOUT_PAYMENT_INSERT, $event);
+            }
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+        }
+    }
+
+    /**
+     * This function is only for testing a checkout flow for a payment method.
+     * Here we start by inserting the payment and proof the checkout flow.
+     */
+    public function testCheckoutFlow($paymentMethod)
+    {
+        try {
+            $model = new Payment();
+            $cart = Cart::getCart();
+            $model->cart_id = $cart->id;
+            $model->transaction_id = \uniqid();
+            $model->payment_method = $paymentMethod;
+            $model->status = Payment::STATUS_COMPLETE;
+            $model->save();
+            return $this->completeCheckout($model);
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+        }
     }
 
     /**
@@ -163,56 +234,37 @@ class CheckoutController extends Controller
     public function actionPaypalCancel()
     {
         $token = $_GET['token'] ?? 'No token set.';
-        Yii::info('User canceled Paypal Express Checkout with token: ' . $token, 'paypal');
+        Yii::info('User canceled Paypal Express Checkout with token: ' . $token, __METHOD__);
         //$this->trigger(PaymentEventInterface::EVENT_PAYMENT_CANCELED);
         return $this->redirect([$this->defaultAction]);
     }
 
-    /**
-     * This method is called after the payment is done.
-     * @param $event kmergen\eshop\components\PaymentEvent
-     * @return mixed
-     */
-    public function paymentDone($event)
+    private function completeCheckout($payment)
     {
-        $info = $event->payment;
-
-        // Create the Payment Model
-        $payment = new Payment();
-        $paymentStatus = new PaymentStatus();
-        $payment->load($info);
-        $payment->insert(false);
-
-        // Create PaymentStatus Model
-        $paymentStatus = new PaymentStatus();
-        $paymentStatus->payment_id = $payment->id;
-        $paymentStatus->status = $payment->status;
-        $paymentStatus->insert(false);
-    }
-
-    /**
-     * Creates a new Order
-     * @return object kmergen\eshop\models\Order
-     */
-    protected function createOrder($cartContent, $customerId)
-    {
-        $order = new Order();
-        $order->customer_id = $customerId;
-        $order->total = $cartContent['total'];
-        $order->ip = Yii::$app->getRequest()->getRemoteIP();
-        $order->status = Order::STATUS_PENDING;
-        $order->save();
-        foreach ($cartContent['items'] as $v) {
-            if ($v['qty'] > 0) {
-                $orderItem = new OrderProduct();
-                $orderItem->product_id = $v['id'];
-                $orderItem->title = $v['title'];
-                $orderItem->sku = $v['sku'];
-                $orderItem->qty = $v['qty'];
-                $orderItem->sell_price = $v['sell_price'];
-                $orderItem->link('order', $order);
-            }
+        $order = Order::createOrder($payment);
+        $event = new CheckoutFlowEvent();
+        $event->order = $order;
+        $event->payment = $payment;
+        $event->initiator = __METHOD__;
+        $event->redirectParams = ['id' => $order->id];
+        //Yii::endProfile('CheckoutFlow');
+        $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
+        if (!$event->messageSent) {
+            $order = $event->order;
+            $customer = $order->customer;
+            $mailer = Yii::$app->getMailer();
+            $mailer->viewPath = '@kmergen/eshop/mail';
+            $mailer->compose('order-confirmation-html', [
+                'module' => $this->module,
+                'order' => $order,
+                'customer' => $customer
+            ])
+                ->setFrom($this->module->shopEmail)
+                ->setTo($customer->email)
+                ->setSubject(Yii::t('eshop', 'Your order from our Shop'))
+                ->send();
         }
-        return $order;
+        return $event;
     }
+
 }

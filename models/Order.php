@@ -25,10 +25,12 @@ use yii\base\Exception;
  */
 class Order extends \yii\db\ActiveRecord
 {
-    const STATUS_CART = 'cart';
     const STATUS_NEW = 'new';
+    const STATUS_PROCESS = 'process';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_COMPLETE = 'complete';
+
+    const EVENT_STATUS_UPDATE = 'status_update';
 
     /**
      * {@inheritdoc}
@@ -57,7 +59,7 @@ class Order extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['status', 'checkout_status', 'payment_status', 'shipping_status'], 'required'],
+            [['status'], 'required'],
             [['customer_id', 'invoice_address_id'], 'integer'],
             [['total'], 'number'],
             [['notes'], 'string'],
@@ -86,31 +88,6 @@ class Order extends \yii\db\ActiveRecord
         ];
     }
 
-    /**
-     * React of updated payment or shipping status and set the [[Order::status]]
-     * @param $orderId string integer
-     */
-    public static function statusUpdate($orderId)
-    {
-        $order = static::find()->with(['payment', 'shipping'])->where(['id' => $orderId])->one();
-        if ($order->shipping !== null) {
-            // We have an order with shipping
-            if ($order->payment->status === PaymentStatus::COMPLETE
-                && $order->shipping->status === ShippingStatus::COMPLETE) {
-                $status = static::STATE_COMPLETE;
-            } else {
-                $status = static::STATE_PENDING;
-            }
-        } else {
-            if ($order->payment->status === PaymentStatus::COMPLETE) {
-                $status = static::STATE_COMPLETE;
-            } else {
-                $status = static::STATE_PENDING;
-            }
-        }
-        $order->updateAttributes(['status' => $status]);
-    }
-
     /*
      * Handle Stripe Webhooks Events
      */
@@ -123,6 +100,91 @@ class Order extends \yii\db\ActiveRecord
             $intent = $data->data->object;
         }
         Yii::info('Stripe webhook ' . $webhook . 'mit Id ' . $data->data->object->id . ' wurde empfangen.', __Method__);
+    }
+
+    /**
+     * This function is called after a Payment is insert. Now we can place the order.
+     *
+     * @param $payment kmergen\eshop\models\Payment
+     * @return object kmergen\eshop\models\Order
+     */
+    public static function createOrder($payment)
+    {
+        $cart = Cart::findOne($payment->cart_id);
+        // Create a new order
+        $transaction = Order::getDb()->beginTransaction();
+        try {
+            $order = new Order();
+            if ($cart->needShipping()) {
+                // $shipping = new Shipping();
+                // do the Shipping stuff and safe the shipping Model
+            } else {
+                if ($payment->status === Payment::STATUS_COMPLETE) {
+                    $order->status = static::STATUS_COMPLETE;
+                } else {
+                    $order->status = static::STATUS_PROCESS;
+                }
+            }
+            if ($cart->customer_id !== null) {
+                $order->customer_id = $cart->customer_id;
+            } else {
+                if (($customer = Customer::find()->where(['user_id' => Yii::$app->getUser()->getId()])->one()) !== null) {
+                    $order->customer_id = $customer->id;
+                } else {
+                    $customer = new Customer();
+                    $customer->email = Yii::$app->getUser()->getId();
+                    $customer->save();
+                }
+            }
+
+            $order->total = $cart->total;
+            $order->ip = Yii::$app->getRequest()->getRemoteIP();
+            $order->save();
+            foreach ($cart->items as $item) {
+                $orderItem = new OrderProduct();
+                $orderItem->product_id = $item->product_id;
+                $orderItem->title = $item->title;
+                $orderItem->sku = $item->sku;
+                $orderItem->qty = $item->qty;
+                $orderItem->sell_price = $item->sell_price;
+                $orderItem->link('order', $order);
+            }
+            $payment->updateAttributes(['order_id' => $order->id]);
+            // Remove Cart from Session
+            $cart->removeCart();
+            $transaction->commit();
+            return $order;
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+        }
+    }
+
+    /**
+     * Set the order status
+     */
+    public static function updateOrderStatus($id)
+    {
+        $order = static::findOne($id);
+        $old_status = $order->status;
+        if ($order->shipping !== null) {
+            // We have an order with shipping
+            if ($order->payment->status === Payment::STATUS_COMPLETE
+                && $order->shipping->status === Shipping::STATUS_COMPLETE) {
+                $status = static::STATUS_COMPLETE;
+            } else {
+                $status = static::STATUS_PROCESS;
+            }
+        } else {
+            if ($order->payment->status === Payment::STATUS_COMPLETE) {
+                $status = static::STATUS_COMPLETE;
+            } else {
+                $status = static::STATUS_PROCESS;
+            }
+        }
+        if ($status !== $old_status) {
+            $order->updateAttributes(['status' => $status]);
+            static::trigger(static::EVENT_STATUS_UPDATE);
+        }
     }
 
     /*
@@ -151,8 +213,8 @@ class Order extends \yii\db\ActiveRecord
     }
 
     /**
- * @return \yii\db\ActiveQuery
- */
+     * @return \yii\db\ActiveQuery
+     */
     public function getProducts()
     {
         return $this->hasMany(OrderProduct::class, ['order_id' => 'id'])->indexBy('product_id');

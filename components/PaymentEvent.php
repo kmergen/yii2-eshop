@@ -21,7 +21,7 @@ use yii\base\Event;
 class PaymentEvent extends Event
 {
     /**
-     * @var $payment array This array contains payment information that use by the handled class e.g. [[kmergen\eshop\models\Payment]].
+     * @var $paymentId array This array contains payment information that use by the handled class e.g. [[kmergen\eshop\models\Payment]].
      */
-    public $payment;
+    public $paymentId;
 }

@@ -25,7 +25,7 @@ class OrderProduct extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'eshop_order_item';
+        return 'eshop_order_product';
     }
 
     /**

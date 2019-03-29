@@ -10,24 +10,17 @@ use yii\helpers\Url;
 
 class Module extends \yii\base\Module
 {
+    public $shopName = 'Eshop-Testshop';
+
+    public $shopEmail = 'eshop@example.com';
+
     public $defaultRoute = 'dashboard';
 
     public $paymentMethods = [];
 
     public $currencySign = '€';
 
-    public $classEventHandler = [
-        [
-            'class' => controllers\StripeWebhookController::class,
-            'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT,
-            'callable' => [models\Order::class, 'handleStripeWebhooks']
-        ],
-        [
-            'class' => controllers\ArticleController::class,
-            'event' => controllers\ArticleController::EVENT_PRODUCT_SHOW,
-            'callable' => [models\Order::class, 'handleArticleShowEvent']
-        ],
-    ];
+    public $classEventHandler = [];
 
     public function init()
     {
@@ -50,7 +43,7 @@ class Module extends \yii\base\Module
                     'class' => 'kmergen\eshop\paypal\PaygatePaypalRest',
                     'clientId' => 'AQIH9zYY-IqXG40tHZHq8VXwf4SMP3WhKubahnPxM-_-aBWcWVvVPGVWDroxWMNZNdUI5A7JQIgkui8z',
                     'clientSecret' => 'EDebRFO3vM_bRG6pHquCHB5VZaTT7TWczsr-edco3y0Ic4PDKYxfqUNw7ygR8wiKdNXjtpketf3KEQCz',
-                    'returnUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/eshop/checkout/paypal-success']),
+                    'returnUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/eshop/checkout/paypal-approval']),
                     'cancelUrl' => Yii::$app->urlManager->createAbsoluteUrl(['/eshop/checkout/paypal-cancel']),
                     'config' => [
                         'mode' => 'sandbox',
@@ -120,9 +113,27 @@ class Module extends \yii\base\Module
         ];
     }
 
-    public function registerEventHandler()
+    private function registerEventHandler()
     {
-        foreach ($this->classEventHandler as $handler) {
+        $eventHandler = ArrayHelper::merge([
+            'stripeWebhookPaymentIntent' => [
+                'class' => controllers\StripeWebhookController::class,
+                'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT,
+                'callable' => [models\Order::class, 'handleStripeWebhooks']
+            ],
+//            'paymentInsert' => [
+//                'class' => controllers\CheckoutController::class,
+//                'event' => controllers\CheckoutController::EVENT_CHECKOUT_PAYMENT_INSERT,
+//                'callable' => [models\Order::class, 'checkoutPaymentInsert']
+//            ],
+//            'orderInsert' => [
+//                'class' => models\Order::class,
+//                'event' => models\Order::EVENT_ORDER_INSERT,
+//                'callable' => [controllers\CheckoutController::class, 'handleOrderInsert']
+//            ],
+        ], $this->classEventHandler);
+
+        foreach ($eventHandler as $handler) {
             \yii\base\Event::on($handler['class'], $handler['event'], $handler['callable']);
         }
     }

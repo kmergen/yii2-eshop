@@ -87,7 +87,7 @@ class StripeWebhookController extends Controller
 
     /**
      * Handle Webhooks payment_intent.succeeded and payment_intent.payment_failed
-     * Return a response with statusCode 200, othwise 400.
+     * Return a response with statusCode 200, otherwise 400.
      * @return object
      */
     public function actionPaymentIntent()

@@ -14,6 +14,8 @@ use Yii;
  * @property int $customer_id
  * @property int $invoice_address_id
  * @property int $shipping_address_id
+ * @property int $total
+ *
  * @property string $status
  * @property int $created_at
  * @property int $updated_at
@@ -24,6 +26,10 @@ use Yii;
  */
 class Cart extends \yii\db\ActiveRecord
 {
+    const STATUS_NEW = 'new';
+    const STATUS_COMPLETE = 'complete';
+    const STATUS_ABANDONED = 'abandoned';
+
     /**
      * {@inheritdoc}
      */
@@ -119,10 +125,9 @@ class Cart extends \yii\db\ActiveRecord
      * Delete the current Cart if it exists.
      * @return void
      */
-    public function deleteCart()
+    public function removeCart()
     {
         if (static::getCurrentCart() !== null) {
-            $this->delete();
             Yii::$app->session->remove('eshop.cart');
         }
     }

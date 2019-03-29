@@ -21,6 +21,9 @@ use Yii;
  */
 class Shipping extends \yii\db\ActiveRecord
 {
+    const STATUS_PENDING = 'pending';
+    const STATUS_COMPLETE = 'complete';
+
     /**
      * {@inheritdoc}
      */
