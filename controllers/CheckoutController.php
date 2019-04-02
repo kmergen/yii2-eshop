@@ -136,10 +136,9 @@ class CheckoutController extends Controller
                 }
             } else {
                 Yii::info('Checkout canceled with Cancel Button', __METHOD__);
-                $event = new CheckoutEvent();
-                $event->action = 'Checkout Canceled with Cancel Button';
+                $event = new CheckoutFlowEvent();
                 $this->trigger(self::EVENT_CHECKOUT_CANCELED, $event);
-                return $this->goBack();
+                return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
             }
             $model->paymentMethod = null;
         }
@@ -245,7 +244,6 @@ class CheckoutController extends Controller
         $event = new CheckoutFlowEvent();
         $event->order = $order;
         $event->payment = $payment;
-        $event->initiator = __METHOD__;
         $event->redirectUrl = ['complete', 'id' => $order->id];
         //Yii::endProfile('CheckoutFlow');
         $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);

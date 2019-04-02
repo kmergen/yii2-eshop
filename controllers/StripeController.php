@@ -49,7 +49,12 @@ class StripeController extends Controller
             'form' => $form,
             'intent' => $intent
         ]);
-        $data['errorMessages'] = [];
+        $data['errorMessages'] = [
+            'cardHolderName' => [
+                'required' => Yii::t('eshop', 'Please enter here the {0}', $model->getAttributeLabel('cardHolderName'))
+            ],
+        ];
+
         return $this->asJson($data);
     }
 
@@ -65,11 +70,7 @@ class StripeController extends Controller
 
         $form = new \yii\bootstrap4\ActiveForm();
         $form->enableClientScript = false;
-        $form->fieldConfig =  function ($model, $attribute) {
-            $data['template'] = "{beginWrapper}\n{label}\n{input}\n{endWrapper}{hint}\n{error}\n";
-            $data['wrapperOptions'] = ['class' => empty(Html::getAttributeValue($model, $attribute)) ? 'input-group inplace-group' : 'input-group inplace-group has-value'];
-            return $data;
-        };
+
         $model = new Sepa();
         $data = [];
         $data['html'] = $this->renderAjax('@kmergen/eshop/stripe/views/sepa_pane', [

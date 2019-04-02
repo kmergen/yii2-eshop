@@ -17,11 +17,5 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'stripe.iban.mandate-acceptance-text' => 'Wenn Sie Ihre IBAN angeben und diese Zahlung bestätigen, sind Sie damit einverstanden
-     Autorisierung von Rocketship Inc. und Stripe, unserem Zahlungsservice
-     Anbieter, Anweisungen an Ihre Bank zu senden, um Ihr Konto zu belasten und
-     Ihre Bank kann Ihr Konto gemäß diesen Anweisungen belasten.
-     Sie haben Anspruch auf Erstattung Ihrer Bank unter den Bedingungen und
-     Bedingungen Ihrer Vereinbarung mit Ihrer Bank. Eine Rückerstattung muss beantragt werden
-     innerhalb von 8 Wochen ab dem Datum, an dem Ihr Konto belastet wurde.',
+    'stripe.iban.mandate-acceptance-text' => 'Wenn Sie Ihre IBAN angeben und diese Zahlung bestätigen, sind Sie damit einverstanden, dass unser Zahlungsservice Anbieter die Firma Rocketship Inc. und Stripe Ihre Bank anweist Ihr Konto mit dem Kaufpreis zu belasten. Eine Rückerstattung ist innerhalb von 8 Wochen ab dem Datum, an dem Ihr Konto belastet wurde möglich.',
 ];

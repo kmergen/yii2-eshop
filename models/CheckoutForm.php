@@ -20,7 +20,7 @@ class CheckoutForm extends Model
 	public function rules()
 	{
 		return [
-			['paymentMethod', 'required', 'message'=> Yii::t('app', 'Please choose a payment method')],
+			['paymentMethod', 'required', 'message'=> Yii::t('eshop', 'Please choose a payment method')],
             ['checkoutCanceled', 'safe']
 		];
 	}

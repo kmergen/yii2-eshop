@@ -35,10 +35,10 @@ class PaygateStripe extends Component
      * @return \Stripe\ApiResource
      */
     public function getIntent() {
-        if (Yii::$app->session->get($this->intentIdSessionKey) === null) {
+        if (($intentId = Yii::$app->session->get($this->intentIdSessionKey)) === null) {
             return $this->createIntent();
         } else {
-            return $this->retrieveIntent();
+            return $this->retrieveIntent($intentId);
         }
     }
 
@@ -65,10 +65,10 @@ class PaygateStripe extends Component
      * Retrieve the stripe Intent
      * @return \Stripe\ApiResource
      */
-    public function retrieveIntent()
+    public function retrieveIntent($intentId)
     {
         \Stripe\Stripe::setApiKey($this->secretKey);
-        return \Stripe\PaymentIntent::retrieve(Yii::$app->session->get($this->intentIdSessionKey));
+        return \Stripe\PaymentIntent::retrieve($intentId);
     }
 
     /**

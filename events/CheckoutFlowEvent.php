@@ -22,14 +22,9 @@ use yii\helpers\Url;
 class CheckoutFlowEvent extends Event
 {
     /**
-     * @var $initiator The controller class who initiated this flow.
+     * @var $redirectUrl string|array The url where the user should be redirected after checkout is complete e.g. ['/eshop/checkout/complete']
      */
-    public $initiator;
-
-    /**
-     * @var $redirectUrl string|array The url where the user should be redirected after checkout is complete
-     */
-    public $redirectUrl = ['/eshop/checkout/complete'];
+    public $redirectUrl;
 
     /**
      * @var bool Is an email already sent.

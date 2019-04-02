@@ -14,6 +14,12 @@ class Module extends \yii\base\Module
 
     public $shopEmail = 'eshop@example.com';
 
+    public $termsOfServiceUrl = ['/site/agb'];
+
+    public $revocationUrl = ['/site/widerruf'];
+
+    public $dataProtectionUrl = ['/site/datenschutz'];
+
     public $defaultRoute = 'dashboard';
 
     public $paymentMethods = [];

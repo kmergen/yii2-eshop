@@ -44,6 +44,6 @@ $this->registerCss($css);
 </div>
 
 <!-- Display mandate acceptance text. -->
-<div id="mandate-acceptance">
-    <?= Yii::t('eshop/checkout', 'stripe.iban.mandate-acceptance-text') ?>
+<div id="mandate-acceptance" class="small">
+    <?= Yii::t('eshop/checkout', 'stripe.iban.mandate-acceptance-text', []) ?>
 </div>

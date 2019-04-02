@@ -15,6 +15,7 @@ use kmergen\eshop\CheckoutAsset;
  * @var yii\web\View $this
  * @var common\models\Ad $model
  * @var yii\bootstrap\ActiveForm $form
+ * @var kmergen\eshop\models\Order $order
  */
 
 $this->title = Yii::t('app/eshop', 'Checkout Complete');
@@ -28,7 +29,8 @@ $profilingResults = Yii::getLogger()->getProfiling();
 
 <?php foreach ($profilingResults as $result): ?>
 
-<p><?= $result['info'] . ': ' . ($result['duration'] * 1000) . ' ms' ?></p>
+<p><?= $result['info'] . ': ' . ($result['du4
+ration'] * 1000) . ' ms' ?></p>
 
 <?php endforeach ?>
 

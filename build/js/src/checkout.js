@@ -20,12 +20,17 @@ KMeshop.checkout = (function ($) {
         }
     }
 
+    const floatlabels = new FloatLabels('form', {
+        style: 2
+    })
+
     /*eslint-disable */
     //Private goes here
     const settings = {
         active: true,
         CHECKOUT_FORM_ID: 'checkoutForm',
         PAYMENT_WALL_ID: 'paymentWall',
+        PAY_BUTTON_ID: 'btnPay',
         CANCEL_BUTTON_ID: 'btnCancel',
         CHECKOUT_CANCELED_ID: 'checkoutform-checkoutcanceled',
         PAYMENT_METHOD_ID: 'checkoutform-paymentmethod',
@@ -54,7 +59,9 @@ KMeshop.checkout = (function ($) {
                 break
             case 'stripe_card':
                 if (action === 'add') {
+                    floatlabels.rebuild();
                     addStripeCard()
+                    addCardValidation(data.errorMessages);
                 } else if (action === 'remove') {
                     removeStripeCard()
                 } else if (action === 'submit') {
@@ -63,6 +70,7 @@ KMeshop.checkout = (function ($) {
                 break
             case 'stripe_sepa':
                 if (action === 'add') {
+                    floatlabels.rebuild()
                     addStripeSepa()
                     addSepaValidation(data.errorMessages);
                 } else if (action === 'remove') {
@@ -134,6 +142,7 @@ KMeshop.checkout = (function ($) {
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
             const el = $(event.target)
+            el.parent().find('input').prop('checked', false)
             const paymentmethod = getPaymentMethod()
             setPaymentMethod('')
             paymentMethodsCallbacks(paymentmethod, 'remove')
@@ -183,10 +192,10 @@ KMeshop.checkout = (function ($) {
         // Add an instance of the card Element into the `card-element` <div>.
         stripeCardElement.mount('#stripeCardElement');
 
-        const cardButton = document.getElementById('stripeCardButton')
-        cardButton.addEventListener('click', function (ev) {
+        const cardButton = document.getElementById(settings.PAY_BUTTON_ID)
+        $(cardButton).on('click', function (ev) {
             const cardholderName = document.getElementById('card-cardholdername')
-            const clientSecret = cardButton.dataset.secret;
+            const clientSecret = document.getElementById('stripeClientSecret').value
             stripe.handleCardPayment(
                 clientSecret, stripeCardElement, {
                     source_data: {
@@ -227,6 +236,10 @@ KMeshop.checkout = (function ($) {
      * Unmount stripe card element
      */
     function removeStripeCard() {
+        // Remove click event from Pay Button
+        const cardButton = document.getElementById(settings.PAY_BUTTON_ID)
+        $(cardButton).off('click')
+        // Unmount the card element
         stripeCardElement.unmount()
     }
 
@@ -242,6 +255,21 @@ KMeshop.checkout = (function ($) {
         //         checkoutFinal();
         //     }
         // });
+    }
+
+    /* Add client validation to Stripe card model card holder name field */
+    function addCardValidation(errorMessages) {
+        $(checkoutForm).yiiActiveForm('add', {
+            id: 'card-cardholdername',
+            name: 'Card[cardHolderName]',
+            container: '.field-card-cardholdername',
+            input: '#card-cardholdername',
+            error: '.invalid-feedback',
+            validateOnBlur: false,
+            validate: function (attribute, value, messages, deferred, $form) {
+                yii.validation.required(value, messages, {message: errorMessages.cardHolderName.required});
+            }
+        })
     }
 
     /**
