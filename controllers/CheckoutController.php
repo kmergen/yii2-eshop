@@ -74,7 +74,6 @@ class CheckoutController extends Controller
         $post = $request->post();
         $model = new CheckoutForm();
         $paymentModel = null;
-        $needShipping = $cart->needShipping();
 
         // Only for testing
         $paypalQuickApproval = false;
@@ -97,29 +96,23 @@ class CheckoutController extends Controller
             $address = new Address();
         }
 
-        //only for testing
-        $address->fullname = "Peter Pan";
-        $address->street = "Andeler Str. 45";
-        $address->postcode = "54516";
-        $address->city = "Wittlich";
-
         if ($model->load($post)) {
             if (!$model->checkoutCanceled) {
                 if ($model->validate()) { // We have client validation enabled. The model should validate, if not there is a manipulation on user input and we go back to returnUrl
-                    $address = new Address(); // Create a new address for each order, not override an existing one.
-                    $address->load($post);
-                    $address->save();
-
-                    if ($cart->needShipping()) {
-                        $shipping = new Shipping();
-                        // @todo go further with the shipping model and save it.
-                    }
-
                     //Do the payment
 
                     if ($model['paymentMethod'] === 'stripe_card') {
+                        $paygate = Yii::createObject(
+                            $module->paymentMethods[$model['paymentMethod']]['paygate']
+                        );
+                        // do this in intent webhook
+
                         // @todo Stripe card were handled on client side. We must evaluate the stripe webhooks, if the
                         // payment was successfully or not.
+
+                        $intentId = Yii::$app->session->remove($paygate->intentIdSessionKey); // only for testing
+                        $intent = $paygate->retrieveIntent($intentId);
+                        $a = 4;
                     } elseif ($paypalQuickApproval) {
                         $event = $this->testCheckoutFlow('paypal_rest');
                         return $this->redirect($event->getRedirectUrl());

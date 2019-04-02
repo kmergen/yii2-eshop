@@ -64,9 +64,7 @@ KMeshop.checkout = function ($) {
                     addCardValidation(data.errorMessages);
                 } else if (action === 'remove') {
                     removeStripeCard();
-                } else if (action === 'submit') {
-                    submitStripeCard();
-                }
+                } else if (action === 'submit') {}
                 break;
             case 'stripe_sepa':
                 if (action === 'add') {
@@ -204,7 +202,9 @@ KMeshop.checkout = function ($) {
                     // Display error.message in your UI.
                 } else {
                     var success = 'Hhhhh';
-                    // The payment has succeeded. Display a success message.
+                    // You must submit form here because normal form submitting can done before the promise result is there.
+                    // Therefore do not include the checkoutFinal() call in the stripeCard submit callback
+                    checkoutFinal();
                 }
             });
         });
@@ -238,20 +238,6 @@ KMeshop.checkout = function ($) {
         // Unmount the card element
         stripeCardElement.unmount();
     }
-
-    function submitStripeCard() {}
-    // stripe.createToken(stripeCardElement).then(function (result) {
-    //     const formGroup = document.getElementById('stripeCardFormGroup')
-    //     const errorElement = document.getElementById('stripeCardErrors');
-    //     if (result.error) {
-    //         formGroup.classList.add('is-invalid');
-    //     } else {
-    //         // Create a token form element.
-    //         stripeTokenHandler(result.token);
-    //         checkoutFinal();
-    //     }
-    // });
-
 
     /* Add client validation to Stripe card model card holder name field */
     function addCardValidation(errorMessages) {

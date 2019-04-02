@@ -23,7 +23,7 @@ class PaygateStripe extends Component
     public $secretKey;
     public $currency = 'eur';
 
-    private $intentIdSessionKey = 'stripeIntentId';
+    public $intentIdSessionKey = 'stripeIntentId';
 
     const EVENT_PAYMENT_DONE = 'payment_done';
 
@@ -54,9 +54,10 @@ class PaygateStripe extends Component
             "amount" => ($cart->total * 100), // eurocent
             "currency" => $this->currency,
             "payment_method_types" => ["card"],
+            'metadata' => ['cart_id' => $cart->id]
         ]);
         Yii::$app->session->set($this->intentIdSessionKey, $intent->id);
-        Yii::$app->session->remove($this->intentIdSessionKey); // only for testing
+
 
         return $intent;
     }
