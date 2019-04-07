@@ -195,7 +195,7 @@ KMeshop.checkout = (function ($) {
         const cardButton = document.getElementById(settings.PAY_BUTTON_ID)
         $(cardButton).on('click', function (ev) {
             const cardholderName = document.getElementById('card-cardholdername')
-            const clientSecret = document.getElementById('stripeClientSecret').value
+            const clientSecret = document.getElementById('card-clientsecret').value
             stripe.handleCardPayment(
                 clientSecret, stripeCardElement, {
                     source_data: {

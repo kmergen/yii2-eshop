@@ -36,6 +36,14 @@ class CheckoutController extends Controller
     const EVENT_CHECKOUT_COMPLETE = 'checkoutComplete';
 
     /**
+     * @event  This event is triggered after a user is redirected to CheckoutController with the paymentmethod "stripe_card".
+     * The fullfilment of checkout is done by a Stripe Webhook.
+     * This event is mainly used to redirect the user to the right place.
+     * Do not checkout fullfilment with this event, remember it is done by webhooks.
+     */
+    const EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK = 'checkoutCompleteAfterStripeWebhook';
+
+    /**
      * @inheritdoc
      */
     public $defaultAction = 'checkout';
@@ -61,40 +69,13 @@ class CheckoutController extends Controller
      */
     public function actionCheckout()
     {
-        if (($cart = Cart::getCurrentCart()) === null) {
-            Yii::$app->session->setFlash('info', Yii::t('eshop', 'There is no existing Cart.'));
-            return $this->goBack();
-        } elseif (empty($cart->items)) {
-            Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your Cart is empty.'));
-            return $this->goBack();
-        }
-
         $module = $this->module;
         $request = Yii::$app->getRequest();
         $post = $request->post();
         $model = new CheckoutForm();
-        $paymentModel = null;
 
         // Only for testing
         $paypalQuickApproval = false;
-
-        if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
-            $customer->email = Yii::$app->user->getIdentity()->email;
-            $customer->updateAttributes(['email']);
-
-            // Look if the customer has an invoice_address. Then we use the invoice_address of the last order
-            $lastOrderWithAddress = Order::find()->asArray()->with('eshop_address')->where("customer_id={$customer->id} AND invoice_address_id IS NOT NULL")->orderBy('created_at DESC')->limit(1)->all();
-            if (!empty($lastOrderWithAddress)) {
-                $address = Address::findOne($lastOrderWithAddress['eshop_address']['id']);
-            } else {
-                $address = new Address();
-            }
-        } else {
-            $customer = new Customer();
-            $customer->user_id = Yii::$app->user->id;
-            $customer->email = Yii::$app->user->getIdentity()->email;
-            $address = new Address();
-        }
 
         if ($model->load($post)) {
             if (!$model->checkoutCanceled) {
@@ -105,14 +86,16 @@ class CheckoutController extends Controller
                         $paygate = Yii::createObject(
                             $module->paymentMethods[$model['paymentMethod']]['paygate']
                         );
-                        // do this in intent webhook
-
-                        // @todo Stripe card were handled on client side. We must evaluate the stripe webhooks, if the
-                        // payment was successfully or not.
-
                         $intentId = Yii::$app->session->remove($paygate->intentIdSessionKey); // only for testing
                         $intent = $paygate->retrieveIntent($intentId);
-                        $a = 4;
+                        $event = new CheckoutFlowEvent();
+                        $event->order = Order::findOne($intent->metadata->order_id);
+                        $event->payment = Payment::findOne($event->order->payment_id);
+                        $this->trigger(self::EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK, $event);
+                        if (!empty($event->flash)) {
+                            Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
+                        }
+                        return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
                     } elseif ($paypalQuickApproval) {
                         $event = $this->testCheckoutFlow('paypal_rest');
                         return $this->redirect($event->getRedirectUrl());
@@ -120,8 +103,7 @@ class CheckoutController extends Controller
                         $paygate = Yii::createObject(
                             $module->paymentMethods[$model['paymentMethod']]['paygate']
                         );
-                        $paygateParams = [];
-                        $paygate->execute($cart, $customer, $paygateParams);
+                        $paygate->execute(Cart::getCurrentCart());
                     }
                 } else { // Model not validate
                     Yii::$app->session->setFlash('warning', Yii::t('flash.checkoutModel.notValidate.OnServerSide'));
@@ -134,14 +116,42 @@ class CheckoutController extends Controller
                 return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
             }
             $model->paymentMethod = null;
-        }
+        } else {
+            if (($cart = Cart::getCurrentCart()) === null) {
+                Yii::$app->session->setFlash('info', Yii::t('eshop', 'There is no existing Cart.'));
+                return $this->goBack();
+            } elseif (empty($cart->items)) {
+                Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your Cart is empty.'));
+                return $this->goBack();
+            }
+            if ($cart->customer_id === null) {
+                if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
+                    $customer->email = Yii::$app->user->getIdentity()->email;
+                    $customer->updateAttributes(['email']);
+                    $cart->updateAttributes(['customer_id' => $customer->id]);
 
+                    // Look if the customer has an invoice_address. Then we use the invoice_address of the last order
+                    $lastOrderWithAddress = Order::find()->asArray()->with('eshop_address')->where("customer_id={$customer->id} AND invoice_address_id IS NOT NULL")->orderBy('created_at DESC')->limit(1)->all();
+                    if (!empty($lastOrderWithAddress)) {
+                        $address = Address::findOne($lastOrderWithAddress['eshop_address']['id']);
+                    } else {
+                        // $address = new Address();
+                    }
+                } else {
+                    $customer = new Customer();
+                    $customer->user_id = Yii::$app->user->id;
+                    $customer->email = Yii::$app->user->getIdentity()->email;
+                    $customer->save(false);
+                    $cart->updateAttributes(['customer_id' => $customer->id]);
+                    //$address = new Address();
+                }
+            }
+        }
         return $this->render('checkout', [
             'cart' => $cart,
             'module' => $module,
             'model' => $model,
-            'paymentModel' => $paymentModel,
-            'address' => $address,
+            //'address' => $address,
         ]);
     }
 
@@ -169,32 +179,33 @@ class CheckoutController extends Controller
     public function actionPaypalApproval()
     {
         try {
+            $transaction = Payment::getDb()->beginTransaction();
             $paygate = Yii::createObject($this->module->paymentMethods['paypal_rest']['paygate']);
-            $payment = $paygate->doPayment();
+            $paypalPayment = $paygate->doPayment();
 
-            if ($payment->state === 'success' || $payment->state === 'approved') {
-                $transaction = $payment->transactions[0];
-                $relatedResources = $transaction->getRelatedResources();
+            if ($paypalPayment->state === 'success' || $paypalPayment->state === 'approved') {
+                $paypalTransaction = $paypalPayment->transactions[0];
+                $relatedResources = $paypalTransaction->getRelatedResources();
                 $relatedResource = $relatedResources[0];
                 $sale = $relatedResource->getSale();
                 // Create new Payment Model
                 Yii::beginProfile('CheckoutFlow', 'checkout');
                 $model = new Payment();
-                $model->cart_id = $transaction->getCustom();
+                $model->cart_id = $paypalTransaction->getCustom();
                 $model->transaction_id = $sale->getId();
                 $model->payment_method = 'paypal_rest';
                 $model->status = Payment::STATUS_COMPLETE;
-                $model->data = \serialize($payment);
+                $model->data = \serialize($paypalPayment);
                 $model->save();
-
-                $event = $this->completeCheckout($model);
+                $order = Order::createOrder($model);
+                $event = $this->completeCheckout($model, $order);
+                $transaction->commit();
+                // Remove Cart from Session
+                Cart::removeFromSession();
                 return $this->redirect($event->getRedirectUrl());
-//                $event = new CheckoutFlowEvent();
-//                $event->payment = $model;
-//                $event->initiator = __METHOD__;
-//                $this->trigger(self::EVENT_CHECKOUT_PAYMENT_INSERT, $event);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
             Yii::error($e->getMessage(), __METHOD__);
         }
     }
@@ -231,9 +242,13 @@ class CheckoutController extends Controller
         return $this->redirect([$this->defaultAction]);
     }
 
-    private function completeCheckout($payment)
+    /**
+     * Complete the Checkout Flow
+     * This is for "paypal_rest" and "stripe_sepa" payment methods.
+     * @param object kmergen\eshop\models\Payment
+     */
+    private function completeCheckout($payment, $order)
     {
-        $order = Order::createOrder($payment);
         $event = new CheckoutFlowEvent();
         $event->order = $order;
         $event->payment = $payment;
@@ -241,24 +256,29 @@ class CheckoutController extends Controller
         //Yii::endProfile('CheckoutFlow');
         $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
         if (!$event->emailSent) {
-            $order = $event->order;
-            $customer = $order->customer;
-            $mailer = Yii::$app->getMailer();
-            $mailer->viewPath = '@kmergen/eshop/mail';
-            $mailer->compose('order-confirmation-html', [
-                'module' => $this->module,
-                'order' => $order,
-                'customer' => $customer
-            ])
-                ->setFrom($this->module->shopEmail)
-                ->setTo($customer->email)
-                ->setSubject(Yii::t('eshop', 'Your order from our Shop'))
-                ->send();
+            static::sendOrderConfirmationMail($order);
         }
         if (!empty($event->flash)) {
             Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
         }
         return $event;
+    }
+
+    public static function sendOrderConfirmationMail($order)
+    {
+        $module = Yii::$app->getModule('eshop');
+        $customer = $order->customer;
+        $mailer = Yii::$app->getMailer();
+        $mailer->viewPath = '@kmergen/eshop/mail';
+        $mailer->compose('order-confirmation-html', [
+            'module' => $module,
+            'order' => $order,
+            'customer' => $customer
+        ])
+            ->setFrom($module->shopEmail)
+            ->setTo($customer->email)
+            ->setSubject(Yii::t('eshop', 'Your order from our Shop'))
+            ->send();
     }
 
 }

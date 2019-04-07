@@ -122,9 +122,9 @@ class Module extends \yii\base\Module
     private function registerEventHandler()
     {
         $eventHandler = ArrayHelper::merge([
-            'stripeWebhookPaymentIntent' => [
+            'stripeWebhookPaymentIntentSucceed' => [
                 'class' => controllers\StripeWebhookController::class,
-                'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT,
+                'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT_SUCCEED,
                 'callable' => [models\Order::class, 'handleStripeWebhooks']
             ],
 //            'paymentInsert' => [

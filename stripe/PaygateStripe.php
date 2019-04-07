@@ -35,10 +35,16 @@ class PaygateStripe extends Component
      * @return \Stripe\ApiResource
      */
     public function getIntent() {
-        if (($intentId = Yii::$app->session->get($this->intentIdSessionKey)) === null) {
+         // $k = Yii::$app->session->remove($this->intentIdSessionKey); // only for testing
+        if (($id = Yii::$app->session->get($this->intentIdSessionKey)) === null) {
             return $this->createIntent();
         } else {
-            return $this->retrieveIntent($intentId);
+            $intent = $this->retrieveIntent($id);
+            if ($intent->status === 'succeeded' || $intent->status === 'canceled') {
+                return $this->createIntent();
+            } else {
+                return $intent;
+            }
         }
     }
 
@@ -48,29 +54,49 @@ class PaygateStripe extends Component
      */
     public function createIntent()
     {
+        // Save the whole session in metadata, because we need some keys later (e.g. the Ad id). If we have a webhook fullfilment
+        // then we have the possibility to get the session data from the checkout flow.
+        $sessionData = $_SESSION;
+        // Remove the unnecessary keys because the string length of the value is limited to 500.
+        unset($sessionData['__flash']);
+
         \Stripe\Stripe::setApiKey($this->secretKey);
         $cart = Cart::getCurrentCart();
         $intent = \Stripe\PaymentIntent::create([
             "amount" => ($cart->total * 100), // eurocent
             "currency" => $this->currency,
             "payment_method_types" => ["card"],
-            'metadata' => ['cart_id' => $cart->id]
+            'metadata' => [
+                'cart_id' => $cart->id,
+                'session' => \json_encode($sessionData)
+            ]
         ]);
         Yii::$app->session->set($this->intentIdSessionKey, $intent->id);
-
-
         return $intent;
     }
 
     /**
-     * Retrieve the stripe Intent
+     * Retrieve Payment Intent
      * @return \Stripe\ApiResource
      */
-    public function retrieveIntent($intentId)
+    public function retrieveIntent($id)
     {
         \Stripe\Stripe::setApiKey($this->secretKey);
-        return \Stripe\PaymentIntent::retrieve($intentId);
+        return \Stripe\PaymentIntent::retrieve($id);
     }
+
+    /**
+     * Update Payment Intent
+     * @param $id string The Payment Intent Id
+     * @param $data array The data to update
+     * @return \Stripe\ApiResource
+     */
+    public function updateIntent($id, $data)
+    {
+        \Stripe\Stripe::setApiKey($this->secretKey);
+        return \Stripe\PaymentIntent::update($id, $data);
+    }
+
 
     /**
      * @param $order

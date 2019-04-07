@@ -84,8 +84,7 @@ class Cart extends \yii\db\ActiveRecord
 
     /**
      * Return the existing Cart or return a new one.
-     * A Cart in Eshop module is an instance of kmergen\eshop\models\Order with Order::STATUS_CART
-     * @return object;
+     * @return object
      */
     public static function getCart()
     {
@@ -101,8 +100,8 @@ class Cart extends \yii\db\ActiveRecord
     }
 
     /**
-     * Return null or the current Cart kmergen\eshop\models\Order
-     * @return mixed
+     * Return null or the current Cart
+     * @return null|object
      * @throws yii\base\Exception
      */
     public static function getCurrentCart()
@@ -114,7 +113,7 @@ class Cart extends \yii\db\ActiveRecord
             if (($cart = static::findOne($cartId)) !== null) {
                 return $cart;
             } else {
-                $msg = 'Cart Id is set in session, but cannot get Cart Model. Cart Id: ' . $cartId;
+                $msg = 'Cart Id is set in session, but cannot get Cart Model for Cart Id: ' . $cartId;
                 Yii::error($msg, __METHOD__);
                 throw new Exception($msg);
             }
@@ -122,10 +121,10 @@ class Cart extends \yii\db\ActiveRecord
     }
 
     /**
-     * Delete the current Cart if it exists.
+     * Delete the current Cart from Session if it exists.
      * @return void
      */
-    public function removeCart()
+    public static function removeCartFromSession()
     {
         if (static::getCurrentCart() !== null) {
             Yii::$app->session->remove('eshop.cart');

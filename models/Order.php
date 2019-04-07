@@ -20,6 +20,7 @@ use yii\base\Exception;
  * @property string $created_at
  * @property string $updated_at
  * @property Customer $customer
+ * @property Customer $payment
  * @property Address $invoiceAddress
  * @property OrderProduct[] $eshopOrderProducts
  */
@@ -60,12 +61,13 @@ class Order extends \yii\db\ActiveRecord
     {
         return [
             [['status'], 'required'],
-            [['customer_id', 'invoice_address_id'], 'integer'],
+            [['customer_id', 'invoice_address_id', 'payment_id'], 'integer'],
             [['total'], 'number'],
             [['notes'], 'string'],
             [['status'], 'string', 'max' => 32],
             [['ip'], 'string', 'max' => 255],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
+            [['payment_id'], 'exist', 'skipOnError' => true, 'targetClass' => Payment::class, 'targetAttribute' => ['payment_id' => 'id']],
             [['invoice_address_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::class, 'targetAttribute' => ['invoice_address_id' => 'id']],
         ];
     }
@@ -78,6 +80,7 @@ class Order extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('eshop', 'ID'),
             'customer_id' => Yii::t('eshop', 'Customer ID'),
+            'payment_id' => Yii::t('eshop', 'Payment ID'),
             'status' => Yii::t('eshop', 'Status'),
             'total' => Yii::t('eshop', 'Total'),
             'invoice_address_id' => Yii::t('eshop', 'Invoice Address ID'),
@@ -112,51 +115,33 @@ class Order extends \yii\db\ActiveRecord
     {
         $cart = Cart::findOne($payment->cart_id);
         // Create a new order
-        $transaction = Order::getDb()->beginTransaction();
-        try {
-            $order = new Order();
-            if ($cart->needShipping()) {
-                // $shipping = new Shipping();
-                // do the Shipping stuff and safe the shipping Model
+        $order = new Order();
+        if ($cart->needShipping()) {
+            // $shipping = new Shipping();
+            // do the Shipping stuff and safe the shipping Model
+        } else {
+            if ($payment->status === Payment::STATUS_COMPLETE) {
+                $order->status = static::STATUS_COMPLETE;
             } else {
-                if ($payment->status === Payment::STATUS_COMPLETE) {
-                    $order->status = static::STATUS_COMPLETE;
-                } else {
-                    $order->status = static::STATUS_PROCESS;
-                }
+                $order->status = static::STATUS_PROCESS;
             }
-            if ($cart->customer_id !== null) {
-                $order->customer_id = $cart->customer_id;
-            } else {
-                if (($customer = Customer::find()->where(['user_id' => Yii::$app->getUser()->getId()])->one()) !== null) {
-                    $order->customer_id = $customer->id;
-                } else {
-                    $customer = new Customer();
-                    $customer->email = Yii::$app->getUser()->getId();
-                    $customer->save();
-                }
-            }
-
-            $order->total = $cart->total;
-            $order->ip = Yii::$app->getRequest()->getRemoteIP();
-            $order->save();
-            foreach ($cart->items as $item) {
-                $orderItem = new OrderProduct();
-                $orderItem->product_id = $item->product_id;
-                $orderItem->title = $item->title;
-                $orderItem->sku = $item->sku;
-                $orderItem->qty = $item->qty;
-                $orderItem->sell_price = $item->sell_price;
-                $orderItem->link('order', $order);
-            }
-            $payment->updateAttributes(['order_id' => $order->id]);
-            // Remove Cart from Session
-            $cart->removeCart();
-            $transaction->commit();
-            return $order;
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
         }
+
+        $order->customer_id = $cart->customer_id;
+        $order->payment_id = $payment->id;
+        $order->total = $cart->total;
+        $order->ip = Yii::$app->getRequest()->getRemoteIP();
+        $order->save();
+        foreach ($cart->items as $item) {
+            $orderItem = new OrderProduct();
+            $orderItem->product_id = $item->product_id;
+            $orderItem->title = $item->title;
+            $orderItem->sku = $item->sku;
+            $orderItem->qty = $item->qty;
+            $orderItem->sell_price = $item->sell_price;
+            $orderItem->link('order', $order);
+        }
+        return $order;
     }
 
     /**
@@ -207,6 +192,14 @@ class Order extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getPayment()
+    {
+        return $this->hasOne(Payment::class, ['id' => 'payment_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getInvoiceAddress()
     {
         return $this->hasOne(Address::class, ['id' => 'invoice_address_id']);
@@ -220,11 +213,4 @@ class Order extends \yii\db\ActiveRecord
         return $this->hasMany(OrderProduct::class, ['order_id' => 'id'])->indexBy('product_id');
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPayment()
-    {
-        return $this->hasOne(Payment::class, ['order_id' => 'id']);
-    }
 }

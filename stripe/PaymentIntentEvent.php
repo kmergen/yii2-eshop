@@ -6,36 +6,35 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace kmergen\eshop\events;
+namespace kmergen\eshop\stripe;
 
 use yii\base\Event;
 use yii\helpers\Url;
 
 /**
- * PaymentEvent
+ * Stripe Payment Intent Event
  *
  * @author Klaus Mergen <kmergenweb@gmail.com>
  * @since 1.0
  *
- * This event is the base class for checkout events.
+ * This event is the base class for Stripe Payment Intent Events.
  */
-class CheckoutFlowEvent extends Event
+class PaymentIntentEvent extends Event
 {
+    /**
+     * @var string The Stripe Payment Intent Webhook
+     */
+    public $webhook;
 
     /**
-     * @var $redirectUrl string|array The url where the user should be redirected after checkout is complete e.g. ['/eshop/checkout/complete']
+     * @var object The Stripe Payment Intent
      */
-    public $redirectUrl;
+    public $intent;
 
     /**
      * @var bool Is an email already sent.
      */
     public $emailSent = false;
-
-    /**
-     * @var array A flash message to show on the redirected page. e.g. ['success', 'Message to show']
-     */
-    public $flash;
 
     /**
      * @var $payment object The kmergen\eshop\models\Payment or null if it is not created yet.
@@ -47,8 +46,5 @@ class CheckoutFlowEvent extends Event
      */
     public $order;
 
-    public function getRedirectUrl()
-    {
-        return Url::to($this->redirectUrl);
-    }
+
 }

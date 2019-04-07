@@ -29,25 +29,18 @@ class StripeController extends Controller
         if (!Yii::$app->getRequest()->getIsAjax()) {
             return MethodNotAllowedHttpException();
         }
-        $paygate = Yii::createObject(
-            $this->module->paymentMethods['stripe_card']['paygate']
-        );
-
-        $intent = $paygate->getIntent();
-
-        $form = new \yii\bootstrap4\ActiveForm();
-        $form->enableClientScript = false;
-
         $model = new Card();
         if (YII_DEBUG) {
             $model->cardHolderName = 'Klaus Mergen';
         }
 
+        $form = new \yii\bootstrap4\ActiveForm();
+        $form->enableClientScript = false;
+
         $data = [];
         $data['html'] = $this->renderAjax('@kmergen/eshop/stripe/views/card_pane', [
             'model' => $model,
             'form' => $form,
-            'intent' => $intent
         ]);
         $data['errorMessages'] = [
             'cardHolderName' => [

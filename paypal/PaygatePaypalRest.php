@@ -93,7 +93,7 @@ class PaygatePaypalRest extends Component
      * @param null $params
      * @return \yii\web\Response
      */
-    public function execute($cart, $customer, $params = null)
+    public function execute($cart, $params = null)
     {
         // Create the payment
         // Set the web-profile-experience @todo Set some profiles permanent.

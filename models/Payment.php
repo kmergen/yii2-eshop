@@ -5,12 +5,12 @@ namespace kmergen\eshop\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
+use yii\helpers\Json;
 
 /**
  * This is the model class for table "eshop_payment".
  *
  * @property int $id
- * @property int $order_id
  * @property int $cart_id
  * @property string $transaction_id
  * @property string $payment_method
@@ -20,7 +20,6 @@ use yii\db\Expression;
  * @property resource $data
  *
  * @property Cart $cart
- * @property Order $order
  * @property PaymentStatus[] $PaymentStatuses
  */
 class Payment extends \yii\db\ActiveRecord
@@ -60,12 +59,11 @@ class Payment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['order_id', 'cart_id'], 'integer'],
+            [['cart_id'], 'integer'],
             [['cart_id', 'transaction_id'], 'required'],
             [['data'], 'string'],
             [['transaction_id', 'payment_method', 'status'], 'string', 'max' => 64],
             [['cart_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cart::class, 'targetAttribute' => ['cart_id' => 'id']],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
         ];
     }
 
@@ -76,7 +74,6 @@ class Payment extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('eshop', 'ID'),
-            'order_id' => Yii::t('eshop', 'Order ID'),
             'cart_id' => Yii::t('eshop', 'Cart ID'),
             'transaction_id' => Yii::t('eshop', 'Transaction ID'),
             'payment_method' => Yii::t('eshop', 'Payment Method'),
@@ -87,20 +84,28 @@ class Payment extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getPaypalData() {
+        return \unserialize($this->data);
+    }
+
+    public function setPaypalData($data) {
+        $this->data = serialize($data);
+    }
+
+    public function getStripeData() {
+        return Json::decode($this->data);
+    }
+
+    public function setStripeData($data) {
+        $this->data = Json::encode($data);
+    }
+
     /**
      * @return \yii\db\ActiveQuery
      */
     public function getCart()
     {
         return $this->hasOne(Cart::class, ['id' => 'cart_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getOrder()
-    {
-        return $this->hasOne(Order::class, ['id' => 'order_id']);
     }
 
     /**
