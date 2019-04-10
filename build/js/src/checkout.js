@@ -346,8 +346,7 @@ KMeshop.checkout = (function ($) {
             currency: 'eur',
             owner: {
                 name: document.querySelector('input[name="Sepa[bankaccountOwner]"]').value,
-                // email: document.querySelector('input[name="Sepa[email]"]').value,
-                email: 'klaus.mergen@web.de'
+                email: document.querySelector('input[name="Sepa[email]"]').value,
             },
             mandate: {
                 // Automatically send a mandate notification email to your customer
@@ -369,6 +368,7 @@ KMeshop.checkout = (function ($) {
                 // Send the Source to your server to create a charge.
                 formGroup.classList.remove('is-invalid');
                 stripeSourceHandler(result.source);
+                checkoutFinal();
             }
         });
     }
@@ -406,7 +406,7 @@ KMeshop.checkout = (function ($) {
     function stripeSourceHandler(source) {
         let hiddenInput = document.createElement('input');
         hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'stripeSource');
+        hiddenInput.setAttribute('name', 'Sepa[source]');
         hiddenInput.setAttribute('value', source.id);
         checkoutForm.appendChild(hiddenInput);
     }

@@ -6,6 +6,7 @@ use yii\base\Exception;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 use Yii;
+use yii\helpers\Json;
 
 /**
  * This is the model class for table "eshop_cart".
@@ -19,6 +20,7 @@ use Yii;
  * @property string $status
  * @property int $created_at
  * @property int $updated_at
+ * @property int $metadata
  *
  * @property Address $invoiceAddress
  * @property Address $shippingAddress
@@ -29,6 +31,7 @@ class Cart extends \yii\db\ActiveRecord
     const STATUS_NEW = 'new';
     const STATUS_COMPLETE = 'complete';
     const STATUS_ABANDONED = 'abandoned';
+    const CART_SESSION_KEY = 'eshop.cart';
 
     /**
      * {@inheritdoc}
@@ -63,6 +66,7 @@ class Cart extends \yii\db\ActiveRecord
             [['invoice_address_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::class, 'targetAttribute' => ['invoice_address_id' => 'id']],
             [['shipping_address_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::class, 'targetAttribute' => ['shipping_address_id' => 'id']],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
+            ['metadata', 'safe']
         ];
     }
 
@@ -83,7 +87,7 @@ class Cart extends \yii\db\ActiveRecord
     }
 
     /**
-     * Return the existing Cart or return a new one.
+     * Return the existing Cart or create a new one and return it.
      * @return object
      */
     public static function getCart()
@@ -92,30 +96,37 @@ class Cart extends \yii\db\ActiveRecord
             $cart = Yii::createObject([
                 'class' => static::class,
                 'total' => 0,
+                'status' => Cart::STATUS_NEW
             ]);
-            $cart->save();
-            Yii::$app->session->set('eshop.cart', $cart->id);
+            $cart->save(false);
+            Yii::$app->session->set(self::CART_SESSION_KEY, $cart->id);
         }
         return $cart;
     }
 
     /**
-     * Return null or the current Cart
+     * Return null or the current Cart.
+     * If the cart is complete (has payment and order) this function return null, because can not use cart that is complete.
      * @return null|object
      * @throws yii\base\Exception
      */
     public static function getCurrentCart()
     {
-        if (($cartId = Yii::$app->session->get('eshop.cart')) === null) {
+        if (($cartId = Yii::$app->session->get(self::CART_SESSION_KEY)) === null) {
             return null;
         } else {
-            //if (($order = static::find()->with('items')->where(['id' => $orderId])->one()) !== null) {
             if (($cart = static::findOne($cartId)) !== null) {
-                return $cart;
+                if ($cart->status === self::STATUS_COMPLETE) {
+                    static::removeCartFromSession();
+                    return null;
+                } else {
+                    return $cart;
+                }
             } else {
                 $msg = 'Cart Id is set in session, but cannot get Cart Model for Cart Id: ' . $cartId;
                 Yii::error($msg, __METHOD__);
-                throw new Exception($msg);
+                static::removeCartFromSession();
+                return null;
             }
         }
     }
@@ -126,9 +137,7 @@ class Cart extends \yii\db\ActiveRecord
      */
     public static function removeCartFromSession()
     {
-        if (static::getCurrentCart() !== null) {
-            Yii::$app->session->remove('eshop.cart');
-        }
+        Yii::$app->session->remove(self::CART_SESSION_KEY);
     }
 
     /**
@@ -162,7 +171,6 @@ class Cart extends \yii\db\ActiveRecord
         }
         return $product;
     }
-
 
     /**
      * @param $id integer kmergen\eshop\Product id
@@ -258,6 +266,38 @@ class Cart extends \yii\db\ActiveRecord
     }
 
     /**
+     * Handle the yii\web\User::EVENT_LOGOUT event
+     * @param $event
+     */
+    public static function handleUserBeforeLogout($event)
+    {
+        if (($cart = static::getCurrentCart()) !== null) {
+            if ($cart->status === self::STATUS_NEW) {
+                $cart->updateAttributes(['status' => self::STATUS_ABANDONED]);
+            }
+        }
+    }
+
+    public function afterFind()
+    {
+        if (!empty($this->metadata)) {
+            $this->metadata = Json::decode($this->metadata);
+        }
+        parent::afterFind();
+    }
+
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+        if (!empty($this->metadata)) {
+            $this->metadata = Json::encode($this->metadata);
+        }
+        return true;
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getInvoiceAddress()
@@ -278,7 +318,7 @@ class Cart extends \yii\db\ActiveRecord
      */
     public function getCustomer()
     {
-        return $this->hasOne(Eshop::class, ['id' => 'customer_id']);
+        return $this->hasOne(Customer::class, ['id' => 'customer_id']);
     }
 
     /**

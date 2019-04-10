@@ -13,8 +13,17 @@ use Yii;
  */
 class Sepa extends Model
 {
+  public $paygate;
   public $bankaccountOwner;
   public $email;
+  public $source;
+
+    public function init()
+    {
+        $module = Module::getInstance();
+        $this->paygate = Yii::createObject($module->paymentMethods['stripe_card']['paygate']);
+    }
+
 
 	/**
 	 * Declares the validation rules.
@@ -23,8 +32,9 @@ class Sepa extends Model
 	{
 		return [
 			// name, email, subject and body are required
-			[['bankaccountOwner', 'email'], 'required', 'message' => Yii::t('eshop', 'Please enter the {attribute} here ')],
+			[['bankaccountOwner', 'email', 'source'], 'required', 'message' => Yii::t('eshop', 'Please enter the {attribute} here ')],
 			['email', 'email'],
+            ['paygate', 'safe']
 		];
 	}
 
@@ -40,4 +50,23 @@ class Sepa extends Model
 		  'email'=> Yii::t('eshop', 'Email'),
 		];
 	}
+
+	public function createCharge($cart) {
+
+
+	    // At the moment sepa debit is not unlocked.
+        // From Stripe it is in planning to migrate sepa from Source Api to the paymentIntent Api.
+        // We do the stuff if we are unlocked from Stripe for sepa payment. Then we can see if the migration is done or
+        // if we go on with the Stripe Source Api.
+	    return null;
+
+//        \Stripe\Stripe::setApiKey($this->paygate->secretKey);
+//
+//        $charge = \Stripe\Charge::create([
+//            'amount' => 1099,
+//            'currency' => 'eur',
+//            'customer' => 'cus_AFGbOSiITuJVDs',
+//            'source' => $this->source,
+//        ]);
+    }
 }

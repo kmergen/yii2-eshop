@@ -15,7 +15,7 @@ use kmergen\eshop\models\Customer;
 use kmergen\eshop\models\Cart;
 use kmergen\eshop\models\Order;
 use kmergen\eshop\models\OrderProduct;
-use kmergen\eshop\stripe\PaygateStripe;
+use kmergen\eshop\stripe\Paygate;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
 use yii\base\Event;
@@ -74,28 +74,52 @@ class CheckoutController extends Controller
         $post = $request->post();
         $model = new CheckoutForm();
 
+        $modelLoaded = $model->load($post);
+
+        if (($cart = Cart::getCurrentCart()) === null || empty($cart->items)) {
+            if (!$modelLoaded || ($modelLoaded && $model['paymentMethod'] !== 'stripe_card')) {
+                Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your cart is empty.'));
+                return $this->goBack();
+            }
+        }
+
         // Only for testing
         $paypalQuickApproval = false;
 
-        if ($model->load($post)) {
+        if ($modelLoaded) {
             if (!$model->checkoutCanceled) {
                 if ($model->validate()) { // We have client validation enabled. The model should validate, if not there is a manipulation on user input and we go back to returnUrl
-                    //Do the payment
-
                     if ($model['paymentMethod'] === 'stripe_card') {
-                        $paygate = Yii::createObject(
-                            $module->paymentMethods[$model['paymentMethod']]['paygate']
-                        );
-                        $intentId = Yii::$app->session->remove($paygate->intentIdSessionKey); // only for testing
-                        $intent = $paygate->retrieveIntent($intentId);
-                        $event = new CheckoutFlowEvent();
-                        $event->order = Order::findOne($intent->metadata->order_id);
-                        $event->payment = Payment::findOne($event->order->payment_id);
-                        $this->trigger(self::EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK, $event);
-                        if (!empty($event->flash)) {
-                            Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
+                        // Do not any fullfilment here, that should be done by the Webhook. You can use it to redirect the user to the right place.
+                        $card = new \kmergen\eshop\stripe\models\Card();
+                        $card->load($post);
+                        $paygate = $card->paygate;
+                        $intent = $paygate->retrieveIntent($card->intentId);
+                        if (isset($intent->metadata->order_id) && $intent->status === 'succeeded') {
+                            $event = new CheckoutFlowEvent();
+                            $event->order = Order::findOne($intent->metadata->order_id);
+                            $event->payment = Payment::findOne($event->order->payment_id);
+                            $this->trigger(self::EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK, $event);
+                            if (!empty($event->flash)) {
+                                Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
+                            }
+                            return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
+                        } else {
+                            // @todo try to trigger the webhook manually or send log message to webmaster
+                            // because payment is done on stripes side but payment was not created on shop side.
+                            return $this->goBack();
                         }
-                        return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
+
+                    } elseif ($model->paymentMethod === 'stripe_sepa') {
+                        // Cannot use this payment method. Just wait until Stripe has unlocked this feature.
+                        $sepa = new \kmergen\eshop\stripe\models\Sepa();
+                        if ($sepa->load($post) && $sepa->validate()) {
+                            $sepa->createCharge($cart);
+                        } else {
+                            Yii::$app->session->setFlash(Yii::t('eshop', 'At the moment you cannot do a stripe sepa payment. Please try annother payment method.'));
+                        }
+
+
                     } elseif ($paypalQuickApproval) {
                         $event = $this->testCheckoutFlow('paypal_rest');
                         return $this->redirect($event->getRedirectUrl());
@@ -117,13 +141,6 @@ class CheckoutController extends Controller
             }
             $model->paymentMethod = null;
         } else {
-            if (($cart = Cart::getCurrentCart()) === null) {
-                Yii::$app->session->setFlash('info', Yii::t('eshop', 'There is no existing Cart.'));
-                return $this->goBack();
-            } elseif (empty($cart->items)) {
-                Yii::$app->session->setFlash('info', Yii::t('eshop', 'Your Cart is empty.'));
-                return $this->goBack();
-            }
             if ($cart->customer_id === null) {
                 if (($customer = Customer::find()->where(['user_id' => Yii::$app->user->id])->one()) !== null) {
                     $customer->email = Yii::$app->user->getIdentity()->email;
@@ -131,7 +148,8 @@ class CheckoutController extends Controller
                     $cart->updateAttributes(['customer_id' => $customer->id]);
 
                     // Look if the customer has an invoice_address. Then we use the invoice_address of the last order
-                    $lastOrderWithAddress = Order::find()->asArray()->with('eshop_address')->where("customer_id={$customer->id} AND invoice_address_id IS NOT NULL")->orderBy('created_at DESC')->limit(1)->all();
+                    $lastOrderWithAddress = Order::find()->asArray()->with('eshop_address')->where("customer_id=$customer->id AND invoice_address_id IS NOT NULL")
+                        ->orderBy('created_at DESC')->limit(1)->all();
                     if (!empty($lastOrderWithAddress)) {
                         $address = Address::findOne($lastOrderWithAddress['eshop_address']['id']);
                     } else {
@@ -189,19 +207,25 @@ class CheckoutController extends Controller
                 $relatedResource = $relatedResources[0];
                 $sale = $relatedResource->getSale();
                 // Create new Payment Model
-                Yii::beginProfile('CheckoutFlow', 'checkout');
-                $model = new Payment();
-                $model->cart_id = $paypalTransaction->getCustom();
-                $model->transaction_id = $sale->getId();
-                $model->payment_method = 'paypal_rest';
-                $model->status = Payment::STATUS_COMPLETE;
-                $model->data = \serialize($paypalPayment);
-                $model->save();
-                $order = Order::createOrder($model);
-                $event = $this->completeCheckout($model, $order);
+                $cart = Cart::findOne($paypalTransaction->getCustom());
+                if ($cart->status === Cart::STATUS_COMPLETE) {
+                    // Do not create Payment and order for a complete cart.
+                    Yii::error("Cart $cart->id has already status " . Cart::STATUS_COMPLETE, __METHOD__);
+                    return $this->goBack();
+                }
+                $payment = new Payment();
+                $payment->cart_id = $cart->id;
+                $payment->transaction_id = $sale->getId();
+                $payment->payment_method = 'paypal_rest';
+                $payment->status = Payment::STATUS_COMPLETE;
+                $payment->data = \serialize($paypalPayment);
+                $payment->save();
+                $order = Order::createOrder($payment, $cart);
+                $cart->updateAttributes(['status' => Cart::STATUS_COMPLETE]);
+                $event = $this->completeCheckout($payment, $order);
                 $transaction->commit();
                 // Remove Cart from Session
-                Cart::removeFromSession();
+                Cart::removeCartFromSession();
                 return $this->redirect($event->getRedirectUrl());
             }
         } catch (\Throwable $e) {

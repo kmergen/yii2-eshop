@@ -44,7 +44,7 @@ class Module extends \yii\base\Module
             'paypal_rest' => [
                 'modelClass' => 'kmergen\eshop\paypal\models\PaypalRest',
                 'label' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
-                'paneurl' => Url::to(['/eshop/paypal-rest/pane']),
+                'paneurl' => ['/eshop/paypal-rest/pane'],
                 'paygate' => [
                     'class' => 'kmergen\eshop\paypal\PaygatePaypalRest',
                     'clientId' => 'AQIH9zYY-IqXG40tHZHq8VXwf4SMP3WhKubahnPxM-_-aBWcWVvVPGVWDroxWMNZNdUI5A7JQIgkui8z',
@@ -60,9 +60,9 @@ class Module extends \yii\base\Module
             'stripe_card' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
                 'label' => 'Credit Card ' . Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
-                'paneurl' => Url::to(['/eshop/stripe/card-pane']),
+                'paneurl' => ['/eshop/stripe/card-pane'],
                 'paygate' => [
-                    'class' => 'kmergen\eshop\stripe\PaygateStripe',
+                    'class' => 'kmergen\eshop\stripe\Paygate',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',
                     'secretKey' => 'sk_test_bEOZ97x0TN45lfKNorLmLUyD',
                 ],
@@ -70,9 +70,9 @@ class Module extends \yii\base\Module
             'stripe_sepa' => [
                 'modelClass' => 'kmergen\eshop\stripe\models\Sepa',
                 'label' => 'Lastschrift ' . Html::img('@web/themes/basic/img/sepa_grey_h12.png'),
-                'paneurl' => Url::to(['/eshop/stripe/sepa-pane']),
+                'paneurl' => ['/eshop/stripe/sepa-pane'],
                 'paygate' => [
-                    'class' => 'kmergen\eshop\stripe\PaygateStripe',
+                    'class' => 'kmergen\eshop\stripe\Paygate',
                     'publishKey' => 'pk_test_X9alOw25WC8wUGquMDlQctgS',
                     'secretKey' => 'sk_test_bEOZ97x0TN45lfKNorLmLUyD',
                 ],
@@ -122,10 +122,10 @@ class Module extends \yii\base\Module
     private function registerEventHandler()
     {
         $eventHandler = ArrayHelper::merge([
-            'stripeWebhookPaymentIntentSucceed' => [
-                'class' => controllers\StripeWebhookController::class,
-                'event' => controllers\StripeWebhookController::EVENT_STRIPE_PAYMENT_INTENT_SUCCEED,
-                'callable' => [models\Order::class, 'handleStripeWebhooks']
+            'userLogout' => [
+                'class' => \yii\web\User::class,
+                'event' => \yii\web\User::EVENT_BEFORE_LOGOUT,
+                'callable' => [models\Cart::class, 'handleUserBeforeLogout']
             ],
 //            'paymentInsert' => [
 //                'class' => controllers\CheckoutController::class,

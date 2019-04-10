@@ -11,6 +11,7 @@ use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\Html;
+use kmergen\eshop\models\Cart;
 use kmergen\eshop\stripe\models\Card;
 use kmergen\eshop\stripe\models\Sepa;
 
@@ -30,6 +31,9 @@ class StripeController extends Controller
             return MethodNotAllowedHttpException();
         }
         $model = new Card();
+        $intent = $model->paygate->getIntent();
+        $model->intentId = $intent->id;
+        $model->clientSecret = $intent->client_secret;
         if (YII_DEBUG) {
             $model->cardHolderName = 'Klaus Mergen';
         }
@@ -65,6 +69,15 @@ class StripeController extends Controller
         $form->enableClientScript = false;
 
         $model = new Sepa();
+        $cart = Cart::getCurrentCart();
+        if (($customer = $cart->customer) !== null) {
+            $model->email = $customer->email;
+        }
+        if (($invoiceAddress = $cart->invoiceAddress) !== null) {
+            $model->bankaccountOwner = $invoiceAddress->fullname;
+        }
+
+
         $data = [];
         $data['html'] = $this->renderAjax('@kmergen/eshop/stripe/views/sepa_pane', [
             'model' => $model,

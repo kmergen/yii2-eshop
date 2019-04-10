@@ -14,6 +14,7 @@ use yii\helpers\Html;
 use kmergen\eshop\stripe\models\Card;
 use kmergen\eshop\stripe\models\Sepa;
 use kmergen\eshop\models\Order;
+use kmergen\eshop\models\Cart;
 use kmergen\eshop\stripe\PaymentIntentEvent;
 use yii\web\Response;
 use yii\helpers\Json;
@@ -81,22 +82,26 @@ class StripeWebhookController extends Controller
                 Yii::info('Incomming Stripe webhook ' . $this->data->type . ' with Intent-Id: '. $intent->id . ' has Order ID: ' . $metadata['order_id'], __METHOD__);
                 return;
             }
-            if (($existingPayment = Payment::find()->where(['cart_id' => $metadata['cart_id']])->one()) !== null) {
-                Yii::error('Cart with Id ' . $existingPayment->cart_id . ' already exists.', __METHOD__);
+            $cartId = $metadata['cart_id'];
+            $cart = Cart::findOne($cartId);
+            if ($cart->status === Cart::STATUS_COMPLETE) {
+                Yii::error("Cart $cart->id has already status " . Cart::STATUS_COMPLETE, __METHOD__);
                 return;
             }
 
             try {
                 $transaction = Payment::getDb()->beginTransaction();
-                $model = new Payment();
-                $model->cart_id = $metadata['cart_id'];
-                $model->transaction_id = $intent->id;
-                $model->payment_method = 'stripe_card';
-                $model->status = Payment::STATUS_COMPLETE;
-                $model->data = \serialize($intent);
-                $model->save();
 
-                $order = Order::createOrder($model);
+                $payment = new Payment();
+                $payment->cart_id = $metadata['cart_id'];
+                $payment->transaction_id = $intent->id;
+                $payment->payment_method = 'stripe_card';
+                $payment->status = Payment::STATUS_COMPLETE;
+                $payment->data = \serialize($intent);
+                $payment->save();
+
+                $order = Order::createOrder($payment, $cart);
+                $cart->updateAttributes(['status' => Cart::STATUS_COMPLETE]);
 
                 $paygate = Yii::createObject(
                     $this->module->paymentMethods['stripe_card']['paygate']
@@ -106,7 +111,7 @@ class StripeWebhookController extends Controller
                 $updateData['metadata']['order_id'] = $order->id;
                 $updatedIntent = $paygate->updateIntent($intent->id, $updateData);
                 $event = new PaymentIntentEvent();
-                $event->payment = $model;
+                $event->payment = $payment;
                 $event->order = $order;
                 $event->webhook = $this->data->type;
                 $event->intent = $updatedIntent;

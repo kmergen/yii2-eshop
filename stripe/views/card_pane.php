@@ -11,6 +11,8 @@ use yii\bootstrap4\ActiveForm;
 <?= $form->field($model, 'cardHolderName')->textInput() ?>
 <?= $form->field($model, 'clientSecret',
     ['template' => "{input}\n"])->hiddenInput()->label(false) ?>
+<?= $form->field($model, 'intentId',
+    ['template' => "{input}\n"])->hiddenInput()->label(false) ?>
 <div id="stripeCardFormGroup" class="form-group">
     <div class="stripe-card-wrapper">
         <div id="stripeCardElement">

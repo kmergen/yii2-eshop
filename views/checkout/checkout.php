@@ -51,7 +51,7 @@ CheckoutAsset::register($this);
                         'aria-labelledby' => 'heading-' . $k,
                         'data-parent' => '#paymentWall',
                         'data-paymentmethod' => $k,
-                        'data-paneurl' => $pm['paneurl'],
+                        'data-paneurl' => Url::to($pm['paneurl']),
                     ]
                     ?>
                     <div class="card">

@@ -3,6 +3,7 @@
 namespace kmergen\eshop\stripe\models;
 
 use kmergen\eshop\Module;
+use kmergen\eshop\stripe\Paygate;
 use yii\base\Model;
 use yii\helpers\Html;
 use Yii;
@@ -13,17 +14,15 @@ use Yii;
  */
 class Card extends Model
 {
+    public $paygate;
     public $cardHolderName;
     public $clientSecret;
+    public $intentId;
 
     public function init()
     {
-        $module = Yii::$app->getModule('eshop');
-        $paygate = Yii::createObject(
-            $module->paymentMethods['stripe_card']['paygate']
-        );
-        $intent = $paygate->getIntent();
-        $this->clientSecret = $intent->client_secret;
+        $module = Module::getInstance();
+        $this->paygate = Yii::createObject($module->paymentMethods['stripe_card']['paygate']);
     }
 
     /**
@@ -33,7 +32,8 @@ class Card extends Model
     {
         return [
             ['cardHolderName', 'required'],
-            [['cardHolderName', 'clientSecret'], 'string'],
+            [['cardHolderName', 'clientSecret', 'intentId'], 'string'],
+            ['paygate', 'safe']
         ];
     }
 

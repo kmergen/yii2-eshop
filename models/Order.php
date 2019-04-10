@@ -111,9 +111,8 @@ class Order extends \yii\db\ActiveRecord
      * @param $payment kmergen\eshop\models\Payment
      * @return object kmergen\eshop\models\Order
      */
-    public static function createOrder($payment)
+    public static function createOrder($payment, $cart)
     {
-        $cart = Cart::findOne($payment->cart_id);
         // Create a new order
         $order = new Order();
         if ($cart->needShipping()) {
