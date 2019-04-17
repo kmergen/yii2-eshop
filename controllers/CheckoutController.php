@@ -109,7 +109,6 @@ class CheckoutController extends Controller
                             // because payment is done on stripes side but payment was not created on shop side.
                             return $this->goBack();
                         }
-
                     } elseif ($model->paymentMethod === 'stripe_sepa') {
                         // Cannot use this payment method. Just wait until Stripe has unlocked this feature.
                         $sepa = new \kmergen\eshop\stripe\models\Sepa();
@@ -118,8 +117,6 @@ class CheckoutController extends Controller
                         } else {
                             Yii::$app->session->setFlash(Yii::t('eshop', 'At the moment you cannot do a stripe sepa payment. Please try annother payment method.'));
                         }
-
-
                     } elseif ($paypalQuickApproval) {
                         $event = $this->testCheckoutFlow('paypal_rest');
                         return $this->redirect($event->getRedirectUrl());
@@ -201,7 +198,7 @@ class CheckoutController extends Controller
             $paygate = Yii::createObject($this->module->paymentMethods['paypal_rest']['paygate']);
             $paypalPayment = $paygate->doPayment();
 
-            if ($paypalPayment->state === 'success' || $paypalPayment->state === 'approved') {
+            if ($paypalPayment->state === 'approved' || $paypalPayment->state === 'success') {
                 $paypalTransaction = $paypalPayment->transactions[0];
                 $relatedResources = $paypalTransaction->getRelatedResources();
                 $relatedResource = $relatedResources[0];
@@ -227,6 +224,9 @@ class CheckoutController extends Controller
                 // Remove Cart from Session
                 Cart::removeCartFromSession();
                 return $this->redirect($event->getRedirectUrl());
+            } else {
+                Yii::$app->session->setFlash('warning', Yii::t('eshopp', 'PayPal cannot execute the Payment. Pleas choose another Payment method.'));
+                return $this->redirect([$this->defaultAction]);
             }
         } catch (\Throwable $e) {
             $transaction->rollBack();
