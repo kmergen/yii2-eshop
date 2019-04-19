@@ -18,15 +18,10 @@ KMeshop.checkout = function ($) {
             elements = stripe.elements();
             initEvents();
         }
-    };
 
-    var floatlabels = new FloatLabels('form', {
-        style: 2
-    });
-
-    /*eslint-disable */
-    //Private goes here
-    var settings = {
+        /*eslint-disable */
+        //Private goes here
+    };var settings = {
         active: true,
         CHECKOUT_FORM_ID: 'checkoutForm',
         PAYMENT_WALL_ID: 'paymentWall',
@@ -35,7 +30,8 @@ KMeshop.checkout = function ($) {
         CHECKOUT_CANCELED_ID: 'checkoutform-checkoutcanceled',
         PAYMENT_METHOD_ID: 'checkoutform-paymentmethod',
         PANE_CONTENT_SELECTOR: '.card-body',
-        stripeId: undefined
+        stripeId: undefined,
+        floatlabels: undefined
     };
 
     var checkoutForm = undefined;
@@ -59,7 +55,9 @@ KMeshop.checkout = function ($) {
                 break;
             case 'stripe_card':
                 if (action === 'add') {
-                    floatlabels.rebuild();
+                    if (settings.floatlabels) {
+                        settings.floatlabels.rebuild();
+                    }
                     addStripeCard();
                     addCardValidation(data.errorMessages);
                 } else if (action === 'remove') {
@@ -68,7 +66,9 @@ KMeshop.checkout = function ($) {
                 break;
             case 'stripe_sepa':
                 if (action === 'add') {
-                    floatlabels.rebuild();
+                    if (settings.floatlabels) {
+                        settings.floatlabels.rebuild();
+                    }
                     addStripeSepa();
                     addSepaValidation(data.errorMessages);
                 } else if (action === 'remove') {
@@ -122,7 +122,9 @@ KMeshop.checkout = function ($) {
 
         /*eslint-enable */
         $(paymentWall).on('show.bs.collapse', function (event) {
+            var triggerElement = $(this);
             var el = $(event.target);
+            el.parent().find('.custom-control-input').prop('checked', true);
             el.find('.spinner-border').removeClass('d-none');
             $.ajax(el.data('paneurl')).done(function (data) {
                 el.find('.spinner-border').addClass('d-none');
@@ -138,7 +140,7 @@ KMeshop.checkout = function ($) {
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
             var el = $(event.target);
-            el.parent().find('input').prop('checked', false);
+            el.parent().find('.custom-control-input').prop('checked', false);
             var paymentmethod = getPaymentMethod();
             setPaymentMethod('');
             paymentMethodsCallbacks(paymentmethod, 'remove');
@@ -148,6 +150,11 @@ KMeshop.checkout = function ($) {
         $(document.getElementById(settings.CANCEL_BUTTON_ID)).on('click', function () {
             document.getElementById(settings.CHECKOUT_CANCELED_ID).value = '1';
             checkoutForm.submit();
+        });
+
+        $(paymentWall).on('hidden.bs.collapse', function (event) {
+            var el = $(event.target);
+            el.parent().find('.custom-control-input').prop('checked', false);
         });
     }
 
@@ -400,7 +407,7 @@ KMeshop.checkout = function ($) {
     function stripeSourceHandler(source) {
         var hiddenInput = document.createElement('input');
         hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'Sepa[stripeSource]');
+        hiddenInput.setAttribute('name', 'Sepa[source]');
         hiddenInput.setAttribute('value', source.id);
         checkoutForm.appendChild(hiddenInput);
     }

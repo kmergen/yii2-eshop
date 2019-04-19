@@ -20,10 +20,6 @@ KMeshop.checkout = (function ($) {
         }
     }
 
-    const floatlabels = new FloatLabels('form', {
-        style: 2
-    })
-
     /*eslint-disable */
     //Private goes here
     const settings = {
@@ -35,7 +31,8 @@ KMeshop.checkout = (function ($) {
         CHECKOUT_CANCELED_ID: 'checkoutform-checkoutcanceled',
         PAYMENT_METHOD_ID: 'checkoutform-paymentmethod',
         PANE_CONTENT_SELECTOR: '.card-body',
-        stripeId: undefined
+        stripeId: undefined,
+        floatlabels: undefined
     }
 
     let checkoutForm = undefined
@@ -59,7 +56,9 @@ KMeshop.checkout = (function ($) {
                 break
             case 'stripe_card':
                 if (action === 'add') {
-                    floatlabels.rebuild();
+                    if (settings.floatlabels) {
+                        settings.floatlabels.rebuild()
+                    }
                     addStripeCard()
                     addCardValidation(data.errorMessages);
                 } else if (action === 'remove') {
@@ -70,7 +69,9 @@ KMeshop.checkout = (function ($) {
                 break
             case 'stripe_sepa':
                 if (action === 'add') {
-                    floatlabels.rebuild()
+                    if (settings.floatlabels) {
+                        settings.floatlabels.rebuild()
+                    }
                     addStripeSepa()
                     addSepaValidation(data.errorMessages);
                 } else if (action === 'remove') {
@@ -124,7 +125,9 @@ KMeshop.checkout = (function ($) {
 
         /*eslint-enable */
         $(paymentWall).on('show.bs.collapse', function (event) {
+            const triggerElement = $(this)
             const el = $(event.target)
+            el.parent().find('.custom-control-input').prop('checked', true)
             el.find('.spinner-border').removeClass('d-none')
             $.ajax(el.data('paneurl'))
                 .done(function (data) {
@@ -142,7 +145,7 @@ KMeshop.checkout = (function ($) {
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
             const el = $(event.target)
-            el.parent().find('input').prop('checked', false)
+            el.parent().find('.custom-control-input').prop('checked', false)
             const paymentmethod = getPaymentMethod()
             setPaymentMethod('')
             paymentMethodsCallbacks(paymentmethod, 'remove')
@@ -152,6 +155,11 @@ KMeshop.checkout = (function ($) {
         $(document.getElementById(settings.CANCEL_BUTTON_ID)).on('click', function () {
             document.getElementById(settings.CHECKOUT_CANCELED_ID).value = '1'
             checkoutForm.submit()
+        })
+
+        $(paymentWall).on('hidden.bs.collapse', function (event) {
+            const el = $(event.target)
+            el.parent().find('.custom-control-input').prop('checked', false)
         })
     }
 
