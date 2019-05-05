@@ -116,7 +116,7 @@ KMeshop.checkout = (function ($) {
         // })
 
         /* This function is called if client validation is successful.
-           But we always return false because the [[paymentMethodsCallbacks()]]
+           But we always return false because the [[paymentMethodsCallbacks()]]^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            will call [[checkoutFinal]] to submit the form. */
         $(checkoutForm).on('beforeSubmit', function (event) {
             paymentMethodsCallbacks(getPaymentMethod(), 'submit')
