@@ -4,12 +4,12 @@
     "description": "Yii2 shop system module",
     "main": "index.js",
     "dependencies": {
-        "babel-cli": "^6.26.0",
-        "browser-sync": "^2.26.3",
+        "browser-sync": "^2.26.5",
         "clean-css-cli": "^4.2.1",
         "node-sass": "^4.11.0"
     },
     "devDependencies": {
+        "babel-cli": "^6.7.0",
         "babel-preset-env": "^1.7.0",
         "eslint": "^5.13.0",
         "nodemon": "^1.18.10",
