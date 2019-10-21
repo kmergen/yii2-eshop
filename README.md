@@ -1,5 +1,6 @@
 # Yii 2 eshop
-Yii2 shop system module
+Yii2 shop system Module
+with Stripe and Paypal Integration
 
 The preferred way to install this extension is through [composer](https://getcomposer.org/).
 
