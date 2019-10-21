@@ -21,7 +21,7 @@
         "paypal/rest-api-sdk-php":"*",
         "kmergen/yii2-grid": "*",
         "kmergen/yii2-media": "*",
-        "kmergen/yii2-widgets": "~2.0",
+        "kmergen/yii2-widgets": "*",
         "ext-curl": "*",
         "ext-json": "*",
         "braintree/braintree_php" : "3.35.0",
