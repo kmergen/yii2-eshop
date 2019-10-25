@@ -1,10 +1,7 @@
 <?php
 
-
 namespace kmergen\eshop;
 use yii\web\AssetBundle;
-
-
 
 class EshopAsset extends AssetBundle
 {
