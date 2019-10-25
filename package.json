@@ -7,7 +7,7 @@
     "devDependencies": {
         "@babel/cli": "^7.4.4",
         "@babel/core": "^7.4.5",
-        "@babel/preset-env": "^7.4.5",
+        "@babel/preset-env": "^7.6.3",
         "browser-sync": "^2.26.7",
         "clean-css-cli": "^4.3.0",
         "eslint": "^5.13.0",
@@ -17,20 +17,20 @@
         "uglify-js": "^3.4.9"
     },
     "scripts": {
-        "build": "npm-run-all --sequential css js",
-        "css": "npm-run-all --parallel css-compile --sequential css-minify",
-        "css-compile": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 build/scss/eshop.scss assets/eshop.css",
-        "css-minify": "cleancss --level 1 --output assets/eshop.min.css assets/eshop.css",
-        "js": "npm-run-all --parallel js-app --parallel js-minify",
-        "js-app": "npm-run-all --parallel js-lint js-transpile",
-        "js-transpile": "babel build/js/src -d assets",
-        "js-lint": "eslint build/js/src",
-        "js-minify": "npm-run-all --parallel js-minify-*",
-        "js-minify-eshop": "uglifyjs assets/eshop.js --compress --mangle --output assets/eshop.min.js",
-        "js-minify-checkout": "uglifyjs assets/checkout.js --compress --mangle --output assets/checkout.min.js",
-        "watch-css": "nodemon --watch build/scss -x \"npm run css-compile\"",
-        "watch-js": "nodemon --watch build/js/src -x \"npm run js-app\"",
-        "serve": "npm-run-all --parallel watch-css watch-js"
+        "build": "npm-run-all -p _js _css  -p _css-minify _js-minify",
+        "dev": "npm-run-all -s _css _js",
+        "_css": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 build/scss/eshop.scss assets/eshop.css",
+        "_css-minify": "cleancss --level 1 --output assets/eshop.min.css assets/eshop.css",
+        "_js": "npm-run-all -p _js-lint _js-transpile",
+        "_js-transpile": "babel build/js/src -d assets",
+        "_js-lint": "eslint build/js/src",
+        "js-lint-fix": "eslint --fix build/js/src",
+        "_js-minify": "npm-run-all -p _js-minify-*",
+        "_js-minify-eshop": "uglifyjs assets/eshop.js --compress --mangle --output assets/eshop.min.js",
+        "_js-minify-checkout": "uglifyjs assets/checkout.js --compress --mangle --output assets/checkout.min.js",
+        "_watch-css": "nodemon --watch build/scss -x \"npm run _css\"",
+        "_watch-js": "nodemon --watch build/js/src -x \"npm run _js\"",
+        "watch": "npm-run-all -p _watch-css _watch-js"
     },
     "repository": {
         "type": "git",
