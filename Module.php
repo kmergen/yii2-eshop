@@ -42,6 +42,7 @@ class Module extends \yii\base\Module
 
         $paymentMethodsDefault = [
             'paypal_rest' => [
+                'enabled' => true,
                 'modelClass' => 'kmergen\eshop\paypal\models\PaypalRest',
                 'label' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
                 'paneurl' => ['/eshop/paypal-rest/pane'],
@@ -58,6 +59,7 @@ class Module extends \yii\base\Module
 
             ],
             'stripe_card' => [
+                'enabled' => true,
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
                 'label' => 'Credit Card ' . Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
                 'paneurl' => ['/eshop/stripe/card-pane'],
@@ -68,6 +70,7 @@ class Module extends \yii\base\Module
                 ],
             ],
             'stripe_sepa' => [
+                'enabled' => true,
                 'modelClass' => 'kmergen\eshop\stripe\models\Sepa',
                 'label' => 'Lastschrift ' . Html::img('@web/themes/basic/img/sepa_grey_h12.png'),
                 'paneurl' => ['/eshop/stripe/sepa-pane'],
