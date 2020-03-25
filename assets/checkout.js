@@ -41,6 +41,8 @@ KMeshop.checkout = function ($) {
   var elements = undefined;
   var stripeIban = undefined;
   var stripeCardElement = undefined;
+  var payButton = document.getElementById(settings.PAY_BUTTON_ID);
+  payButton.disabled = true;
 
   function paymentMethodsCallbacks(paymentMethod, action, data) {
     switch (paymentMethod) {
@@ -105,6 +107,7 @@ KMeshop.checkout = function ($) {
 
 
   function checkoutFinal() {
+    $.LoadingOverlay('show');
     checkoutForm.submit();
   }
 
@@ -145,6 +148,7 @@ KMeshop.checkout = function ($) {
       });
     });
     $(paymentWall).on('hide.bs.collapse', function (event) {
+      payButton.disabled = true;
       var el = $(event.target);
       el.parent().find('.custom-control-input').prop('checked', false);
       var paymentmethod = getPaymentMethod();
@@ -166,12 +170,10 @@ KMeshop.checkout = function ($) {
 
 
   function addPaypalRest() {
-    return;
+    payButton.disabled = false;
   }
 
-  function removePaypalRest() {
-    return;
-  }
+  function removePaypalRest() {}
 
   function submitPaypalRest() {
     checkoutFinal();
@@ -200,8 +202,9 @@ KMeshop.checkout = function ($) {
 
 
     stripeCardElement.mount('#stripeCardElement');
-    var cardButton = document.getElementById(settings.PAY_BUTTON_ID);
-    $(cardButton).on('click', function (ev) {
+    var formGroup = document.getElementById('stripeCardFormGroup');
+    var errorElement = document.getElementById('stripeCardErrors');
+    $(payButton).on('click', function (ev) {
       var cardholderName = document.getElementById('card-cardholdername');
       var clientSecret = document.getElementById('card-clientsecret').value;
       stripe.handleCardPayment(clientSecret, stripeCardElement, {
@@ -212,33 +215,39 @@ KMeshop.checkout = function ($) {
         }
       }).then(function (result) {
         if (result.error) {
-          var error = 'Haha'; // Display error.message in your UI.
-        } else {
-          var success = 'Hhhhh'; // You must submit form here because normal form submitting can done before the promise result is there.
-          // Therefore do not include the checkoutFinal() call in the stripeCard submit callback
+          payButton.disabled = true;
+          var error = result.error;
+          var msg = '';
 
+          if (error.type === 'card_error') {
+            msg = 'Sie können mit dieser Kreditkarte die Zahlung nicht ausführen.';
+          }
+
+          errorElement.textContent = msg;
+          formGroup.classList.add('is-invalid');
+          formGroup.classList.remove('is-valid'); // Display error.message in your UI.
+        } else {
+          // You must submit form here because normal form submitting can done before the promise result is there.
+          // Therefore do not include the checkoutFinal() call in the stripeCard submit callback
           checkoutFinal();
         }
       });
     });
     stripeCardElement.addEventListener('change', function (event) {
-      var formGroup = document.getElementById('stripeCardFormGroup');
-      var errorElement = document.getElementById('stripeCardErrors');
-
       if (event.error) {
         errorElement.textContent = event.error.message;
         formGroup.classList.add('is-invalid');
-
-        if (!event.complete) {
-          formGroup.classList.remove('is-valid');
-        }
+        formGroup.classList.remove('is-valid');
       } else {
         errorElement.textContent = '';
+        formGroup.classList.add('is-valid');
         formGroup.classList.remove('is-invalid');
+      }
 
-        if (event.complete) {
-          formGroup.classList.add('is-valid');
-        }
+      if (event.complete) {
+        payButton.disabled = false;
+      } else {
+        payButton.disabled = true;
       }
     });
   }
@@ -249,8 +258,7 @@ KMeshop.checkout = function ($) {
 
   function removeStripeCard() {
     // Remove click event from Pay Button
-    var cardButton = document.getElementById(settings.PAY_BUTTON_ID);
-    $(cardButton).off('click'); // Unmount the card element
+    $(payButton).off('click'); // Unmount the card element
 
     stripeCardElement.unmount();
   }

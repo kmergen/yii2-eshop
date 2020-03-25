@@ -5,8 +5,8 @@
 		"../build/scss/eshop.scss"
 	],
 	"sourcesContent": [
-		"/**\r\n * KM Websolutions Projects\r\n * @link http://www.yiiframework.com/\r\n * @copyright Copyright (c) 2010 KM Websolutions\r\n * @license http://www.yiiframework.com/license/\r\n */\r\n#paymentwall {\r\n  padding: 0;\r\n  margin: 0;\r\n}\r\n"
+		"/**\r\n * KM Websolutions Projects\r\n * @link http://www.yiiframework.com/\r\n * @copyright Copyright (c) 2010 KM Websolutions\r\n * @license http://www.yiiframework.com/license/\r\n */\r\n#paymentwall {\r\n  padding: 0;\r\n  margin: 0;\r\n}\r\n.form-group.is-invalid .invalid-feedback {\r\n  display:block;\r\n}\r\n"
 	],
 	"names": [],
-	"mappings": "AAAA;;;;;GAKG;AACH,AAAA,YAAY,CAAC;EACX,OAAO,EAAE,CAAC;EACV,MAAM,EAAE,CAAC;CACV"
+	"mappings": "AAAA;;;;;GAKG;AACH,AAAA,YAAY,CAAC;EACX,OAAO,EAAE,CAAC;EACV,MAAM,EAAE,CAAC;CACV;;AACD,AAAA,WAAW,AAAA,WAAW,CAAC,iBAAiB,CAAC;EACvC,OAAO,EAAC,KAAK;CACd"
 }

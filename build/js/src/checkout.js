@@ -43,6 +43,9 @@ KMeshop.checkout = (function ($) {
     let stripeIban = undefined
     let stripeCardElement = undefined
 
+    const payButton = document.getElementById(settings.PAY_BUTTON_ID)
+    payButton.disabled = true;
+
     function paymentMethodsCallbacks(paymentMethod, action, data) {
         switch (paymentMethod) {
             case 'paypal_rest':
@@ -99,6 +102,7 @@ KMeshop.checkout = (function ($) {
     This is the final function that the active payment method use as callback
     The data parameter is an object with specified keys */
     function checkoutFinal() {
+        $.LoadingOverlay('show')
         checkoutForm.submit()
     }
 
@@ -144,6 +148,7 @@ KMeshop.checkout = (function ($) {
         })
 
         $(paymentWall).on('hide.bs.collapse', function (event) {
+            payButton.disabled = true
             const el = $(event.target)
             el.parent().find('.custom-control-input').prop('checked', false)
             const paymentmethod = getPaymentMethod()
@@ -168,11 +173,11 @@ KMeshop.checkout = (function ($) {
     // Payment method specific functions
 
     function addPaypalRest() {
-        return
+        payButton.disabled = false
     }
 
     function removePaypalRest() {
-        return
+
     }
 
     function submitPaypalRest() {
@@ -185,7 +190,7 @@ KMeshop.checkout = (function ($) {
      */
     function addStripeCard() {
         // Custom styling can be passed to options when creating an Element.
-        var style = {
+        let style = {
             base: {
                 // Add your base input styles here. For example:
                 fontSize: '16px',
@@ -200,8 +205,10 @@ KMeshop.checkout = (function ($) {
         // Add an instance of the card Element into the `card-element` <div>.
         stripeCardElement.mount('#stripeCardElement');
 
-        const cardButton = document.getElementById(settings.PAY_BUTTON_ID)
-        $(cardButton).on('click', function (ev) {
+        const formGroup = document.getElementById('stripeCardFormGroup')
+        const errorElement = document.getElementById('stripeCardErrors')
+
+        $(payButton).on('click', function (ev) {
             const cardholderName = document.getElementById('card-cardholdername')
             const clientSecret = document.getElementById('card-clientsecret').value
             stripe.handleCardPayment(
@@ -212,10 +219,17 @@ KMeshop.checkout = (function ($) {
                 }
             ).then(function (result) {
                 if (result.error) {
-                    let error = 'Haha'
+                    payButton.disabled = true;
+                    let error = result.error
+                    let msg = ''
+                    if (error.type === 'card_error') {
+                        msg = 'Sie können mit dieser Kreditkarte die Zahlung nicht ausführen.'
+                    }
+                    errorElement.textContent = msg
+                    formGroup.classList.add('is-invalid')
+                    formGroup.classList.remove('is-valid')
                     // Display error.message in your UI.
                 } else {
-                    let success = 'Hhhhh'
                     // You must submit form here because normal form submitting can done before the promise result is there.
                     // Therefore do not include the checkoutFinal() call in the stripeCard submit callback
                     checkoutFinal()
@@ -224,20 +238,19 @@ KMeshop.checkout = (function ($) {
         });
 
         stripeCardElement.addEventListener('change', function (event) {
-            const formGroup = document.getElementById('stripeCardFormGroup')
-            const errorElement = document.getElementById('stripeCardErrors')
             if (event.error) {
                 errorElement.textContent = event.error.message
                 formGroup.classList.add('is-invalid')
-                if (!event.complete) {
-                    formGroup.classList.remove('is-valid')
-                }
+                formGroup.classList.remove('is-valid')
             } else {
                 errorElement.textContent = ''
+                formGroup.classList.add('is-valid')
                 formGroup.classList.remove('is-invalid')
-                if (event.complete) {
-                    formGroup.classList.add('is-valid')
-                }
+            }
+            if (event.complete) {
+                payButton.disabled = false
+            } else {
+                payButton.disabled = true;
             }
         });
     }
@@ -247,8 +260,7 @@ KMeshop.checkout = (function ($) {
      */
     function removeStripeCard() {
         // Remove click event from Pay Button
-        const cardButton = document.getElementById(settings.PAY_BUTTON_ID)
-        $(cardButton).off('click')
+        $(payButton).off('click')
         // Unmount the card element
         stripeCardElement.unmount()
     }

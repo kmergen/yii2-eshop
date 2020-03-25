@@ -11,7 +11,6 @@ use dosamigos\typeahead\Bloodhound;
 use dosamigos\typeahead\TypeAhead;
 use kmergen\eshop\CheckoutAsset;
 
-
 /**
  * @var yii\web\View $this
  * @var common\models\Ad $model
@@ -65,7 +64,8 @@ $assets = CheckoutAsset::register($this);
                                  aria-expanded="true" aria-controls="collapse-<?= $k ?>">
                                 <input type="radio" name="radio-pm" id="<?= $k ?>" class="custom-control-input">
 
-                                <label class="custom-control-label" for="<?= $k ?>"><?= empty($pm['labelAsset']) ? $pm['labelText'] : $pm['labelText'] . ' ' . Html::img($assets->baseUrl . '/' . $pm['labelAsset'], ['class' => 'img-fluid'])  ?></label>
+                                <label class="custom-control-label"
+                                       for="<?= $k ?>"><?= empty($pm['labelAsset']) ? $pm['labelText'] : $pm['labelText'] . ' ' . Html::img($assets->baseUrl . '/' . $pm['labelAsset'], ['class' => 'img-fluid']) ?></label>
                             </div>
                         </div>
 
@@ -116,6 +116,7 @@ $assets = CheckoutAsset::register($this);
         </div>
     </div>
 
+
     <!--Address Content-->
     <!--    <div class="row">-->
     <!--        <div class="col-md-6">-->
@@ -147,7 +148,7 @@ $assets = CheckoutAsset::register($this);
             </button>
         </div>
     </div>
-    </div>
+
 
     <p class="small">
         <?= Yii::t('eshop', 'view.checkout.acceptText', [
@@ -162,15 +163,7 @@ $assets = CheckoutAsset::register($this);
 
 <?php ActiveForm::end(); ?>
     </div>
-
 <?php
 $stripeId = $module->paymentMethods['stripe_card']['paygate']['publishKey'];
+$this->registerJsFile('https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js');
 $this->registerJs("KMeshop.checkout.init({stripeId: '$stripeId', floatlabels: floatlabels});");
-
-
-
-
-
-
-
-

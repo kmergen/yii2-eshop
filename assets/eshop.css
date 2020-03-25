@@ -9,4 +9,8 @@
   margin: 0;
 }
 
+.form-group.is-invalid .invalid-feedback {
+  display: block;
+}
+
 /*# sourceMappingURL=eshop.css.map */
