@@ -44,7 +44,8 @@ class Module extends \yii\base\Module
             'paypal_rest' => [
                 'enabled' => true,
                 'modelClass' => 'kmergen\eshop\paypal\models\PaypalRest',
-                'label' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
+                'labelText' => '<img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal Logo">',
+                'labelAsset' => false,
                 'paneurl' => ['/eshop/paypal-rest/pane'],
                 'paygate' => [
                     'class' => 'kmergen\eshop\paypal\PaygatePaypalRest',
@@ -61,7 +62,8 @@ class Module extends \yii\base\Module
             'stripe_card' => [
                 'enabled' => true,
                 'modelClass' => 'kmergen\eshop\stripe\models\Card',
-                'label' => 'Credit Card ' . Html::img('@web/themes/basic/img/credit_card_banner.png', ['class' => 'img-fluid']),
+                'labelText' => Yii::t('eshop', 'Credit Card'),
+                'labelAsset' => 'images/credit_card_banner.png',
                 'paneurl' => ['/eshop/stripe/card-pane'],
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\Paygate',
@@ -70,9 +72,10 @@ class Module extends \yii\base\Module
                 ],
             ],
             'stripe_sepa' => [
-                'enabled' => true,
+                'enabled' => false,
                 'modelClass' => 'kmergen\eshop\stripe\models\Sepa',
-                'label' => 'Lastschrift ' . Html::img('@web/themes/basic/img/sepa_grey_h12.png'),
+                'labelText' => Yii::t('eshop', 'Direct Debit'),
+                'labelAsset' => 'images/sepa_grey_h12.png',
                 'paneurl' => ['/eshop/stripe/sepa-pane'],
                 'paygate' => [
                     'class' => 'kmergen\eshop\stripe\Paygate',

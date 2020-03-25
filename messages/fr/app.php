@@ -35,8 +35,6 @@ return [
     'view.ad-checkout.acceptText' => '',
     'view.ad-checkout.payButtonText' => '',
     'view.ad-checkout.title' => '',
-    '{attribute} is not a valid IBAN No.' => '',
-    '{attribute} is not a valid.' => '',
     'Active' => '@@@@',
     'Address ID' => '@@@@',
     'Birthday' => '@@@@',
@@ -58,4 +56,6 @@ return [
     'User ID' => '@@@@',
     'view.ad-checkout.cancelButtonText' => '@@@@',
     'view.checkout.payButtonText' => '@@@@',
+    '{attribute} is not a valid IBAN No.' => '@@@@',
+    '{attribute} is not a valid.' => '@@@@',
 ];

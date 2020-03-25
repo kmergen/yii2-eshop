@@ -21,6 +21,15 @@ use yii\helpers\Url;
  */
 class CheckoutFlowEvent extends Event
 {
+    /**
+     * @var $cartId integer The Cart ID
+     */
+    public $cartId;
+
+    /**
+     * @var $paymentMethod string The payment method (e.g. "paypal_rest")
+     */
+    public $paymentMethod;
 
     /**
      * @var $redirectUrl string|array The url where the user should be redirected after checkout is complete e.g. ['/eshop/checkout/complete']

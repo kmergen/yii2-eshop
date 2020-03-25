@@ -11,6 +11,7 @@ use dosamigos\typeahead\Bloodhound;
 use dosamigos\typeahead\TypeAhead;
 use kmergen\eshop\CheckoutAsset;
 
+
 /**
  * @var yii\web\View $this
  * @var common\models\Ad $model
@@ -21,7 +22,7 @@ use kmergen\eshop\CheckoutAsset;
 $this->title = Yii::t('app/eshop', 'Checkout');
 $this->params['breadcrumbs'][] = $this->title;
 $this->registerJsFile('https://js.stripe.com/v3/');
-CheckoutAsset::register($this);
+$assets = CheckoutAsset::register($this);
 ?>
 
     <div class="justify-content-center">
@@ -46,103 +47,106 @@ CheckoutAsset::register($this);
                 <!--    Begin payment wall-->
                 <div class="payment-wall" id="paymentWall">
                     <?php foreach ($module->paymentMethods as $k => $pm): ?>
-                        <?php
-                        $attributes = [
-                            'id' => 'collapse-' . $k,
-                            'class' => $model->paymentMethod === $k ? 'collapse show' : 'collapse',
-                            'aria-labelledby' => 'heading-' . $k,
-                            'data-parent' => '#paymentWall',
-                            'data-paymentmethod' => $k,
-                            'data-paneurl' => Url::to($pm['paneurl']),
-                        ]
-                        ?>
-                        <div class="card">
-                            <div class="card-header" id="headingOne">
-                                <div class="custom-control custom-radio" data-toggle="collapse"
-                                     data-target="#collapse-<?= $k ?>"
-                                     aria-expanded="true" aria-controls="collapse-<?= $k ?>">
-                                    <input type="radio" name="radio-pm" id="<?= $k ?>" class="custom-control-input">
-                                    <label class="custom-control-label" for="<?= $k ?>"><?= $pm['label'] ?></label>
+                    <?php if ($pm['enabled']) : ?>
+                    <?php
+                    $attributes = [
+                        'id' => 'collapse-' . $k,
+                        'class' => $model->paymentMethod === $k ? 'collapse show' : 'collapse',
+                        'aria-labelledby' => 'heading-' . $k,
+                        'data-parent' => '#paymentWall',
+                        'data-paymentmethod' => $k,
+                        'data-paneurl' => Url::to($pm['paneurl']),
+                    ]
+                    ?>
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <div class="custom-control custom-radio" data-toggle="collapse"
+                                 data-target="#collapse-<?= $k ?>"
+                                 aria-expanded="true" aria-controls="collapse-<?= $k ?>">
+                                <input type="radio" name="radio-pm" id="<?= $k ?>" class="custom-control-input">
+
+                                <label class="custom-control-label" for="<?= $k ?>"><?= empty($pm['labelAsset']) ? $pm['labelText'] : $pm['labelText'] . ' ' . Html::img($assets->baseUrl . '/' . $pm['labelAsset'], ['class' => 'img-fluid'])  ?></label>
+                            </div>
+                        </div>
+
+                        <div<?= Html::renderTagAttributes($attributes) ?>>
+                            <div class="text-center">
+                                <div class="spinner-border mt-5" role="state">
+                                    <span class="sr-only">Loading...</span>
                                 </div>
                             </div>
+                            <div class="card-body"></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+            <?= $form->field($model, 'paymentMethod', ['template' => "{input}\n{error}\n"])->hiddenInput()->label(false) ?>
+            <?= $form->field($model, 'checkoutCanceled', ['template' => "{input}"])->hiddenInput()->label(false) ?>
+            <!--    End payment wall-->
+        </div>
 
-                            <div<?= Html::renderTagAttributes($attributes) ?>>
-                                <div class="text-center">
-                                    <div class="spinner-border mt-5" role="state">
-                                        <span class="sr-only">Loading...</span>
-                                    </div>
-                                </div>
-                                <div class="card-body"></div>
+        <!--Cart Content-->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><?= Yii::t('eshop', 'Order Review') ?></h5>
+                </div>
+                <div class="card-body">
+                    <?php foreach ($cart->items as $item) : ?>
+                        <div class="row no-gutters">
+                            <div class="col-6">
+                                <?= $item->title ?>
+                            </div>
+                            <div class="col-6">
+                                <?= Yii::$app->getFormatter()->asCurrency($item->sell_price) ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
-                </div>
-                <?= $form->field($model, 'paymentMethod', ['template' => "{input}\n{error}\n"])->hiddenInput()->label(false) ?>
-                <?= $form->field($model, 'checkoutCanceled', ['template' => "{input}"])->hiddenInput()->label(false) ?>
-                <!--    End payment wall-->
-            </div>
-
-            <!--Cart Content-->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><?= Yii::t('eshop', 'Order Review') ?></h5>
-                    </div>
-                    <div class="card-body">
-                        <?php foreach ($cart->items as $item) : ?>
-                            <div class="row no-gutters">
-                                <div class="col-6">
-                                    <?= $item->title ?>
-                                </div>
-                                <div class="col-6">
-                                    <?= Yii::$app->getFormatter()->asCurrency($item->sell_price) ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <div class="row no-gutters mt-2">
-                            <div class="col-6 font-weight-bold">
-                                <?= Yii::t('eshop', 'Total price') ?>
-                            </div>
-                            <div class="col-6 font-weight-bold">
-                                <?= Yii::$app->getFormatter()->asCurrency($cart->total) ?>
-                            </div>
+                    <div class="row no-gutters mt-2">
+                        <div class="col-6 font-weight-bold">
+                            <?= Yii::t('eshop', 'Total price') ?>
+                        </div>
+                        <div class="col-6 font-weight-bold">
+                            <?= Yii::$app->getFormatter()->asCurrency($cart->total) ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!--Address Content-->
-        <!--    <div class="row">-->
-        <!--        <div class="col-md-6">-->
-        <!---->
-        <!--        </div>-->
-        <!--        <div class="col-md-6">-->
-        <!--            --><?php //if ($address !== null): ?>
-        <!--                --><?php // echo $form->field($address, 'fullname')->textInput(['maxlength' => true]) ?>
-        <!--                --><?php // echo $form->field($address, 'street')->textInput(['maxlength' => true]) ?>
-        <!--                --><?php // echo $form->field($address, 'postcode')->textInput(['maxlength' => true]) ?>
-        <!--                --><?php // echo $form->field($address, 'city')->textInput(['maxlength' => true]) ?>
-        <!--            --><?php //endif; ?>
-        <!--        </div>-->
-        <!--    </div>-->
+    <!--Address Content-->
+    <!--    <div class="row">-->
+    <!--        <div class="col-md-6">-->
+    <!---->
+    <!--        </div>-->
+    <!--        <div class="col-md-6">-->
+    <!--            --><?php //if ($address !== null): ?>
+    <!--                --><?php // echo $form->field($address, 'fullname')->textInput(['maxlength' => true]) ?>
+    <!--                --><?php // echo $form->field($address, 'street')->textInput(['maxlength' => true]) ?>
+    <!--                --><?php // echo $form->field($address, 'postcode')->textInput(['maxlength' => true]) ?>
+    <!--                --><?php // echo $form->field($address, 'city')->textInput(['maxlength' => true]) ?>
+    <!--            --><?php //endif; ?>
+    <!--        </div>-->
+    <!--    </div>-->
 
 
-        <!--Buttons-->
-        <div class="row mt-3 mb-2">
-            <div class="col-6">
-                <div class="form-group form-actions">
-                    <button id="btnCancel" class="btn btn-link" type="reset" name="btnCancel">
-                        <span class="small"><< <?= Yii::t('eshop', 'view.checkout.cancelButtonText') ?></span>
-                    </button>
-                </div>
-            </div>
-            <div class="col-6 text-right">
-                <button id="btnPay" class="btn btn-success" type="submit" name="btnPay">
-                    <span><?= Yii::t('eshop', 'view.checkout.payButtonText', ['price' => Yii::$app->getFormatter()->asCurrency($cart->total)]) ?> >></span>
+    <!--Buttons-->
+    <div class="row mt-3 mb-2">
+        <div class="col-6">
+            <div class="form-group form-actions">
+                <button id="btnCancel" class="btn btn-link" type="reset" name="btnCancel">
+                    <span class="small"><< <?= Yii::t('eshop', 'view.checkout.cancelButtonText') ?></span>
                 </button>
             </div>
         </div>
+        <div class="col-6 text-right">
+            <button id="btnPay" class="btn btn-success" type="submit" name="btnPay">
+                <span><?= Yii::t('eshop', 'view.checkout.payButtonText', ['price' => Yii::$app->getFormatter()->asCurrency($cart->total)]) ?> >></span>
+            </button>
+        </div>
+    </div>
     </div>
 
     <p class="small">

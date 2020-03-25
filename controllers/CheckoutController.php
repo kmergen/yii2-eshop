@@ -2,23 +2,16 @@
 
 namespace kmergen\eshop\controllers;
 
-use DeepCopy\f001\A;
-use kmergen\eshop\components\PaymentEvent;
-use kmergen\eshop\models\Shipping;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
-use yii\web\HttpException;
 use kmergen\eshop\models\CheckoutForm;
 use kmergen\eshop\models\Address;
 use kmergen\eshop\models\Customer;
 use kmergen\eshop\models\Cart;
 use kmergen\eshop\models\Order;
-use kmergen\eshop\models\OrderProduct;
-use kmergen\eshop\stripe\Paygate;
 use kmergen\eshop\models\Payment;
 use kmergen\eshop\models\PaymentStatus;
-use yii\base\Event;
 use kmergen\eshop\events\CheckoutFlowEvent;
 
 class CheckoutController extends Controller
@@ -31,7 +24,6 @@ class CheckoutController extends Controller
 
     /**
      * @event  This event is triggered after a checkout is completed.
-     * This means the payment is done, the order and shipping (if necessary) is created.
      */
     const EVENT_CHECKOUT_COMPLETE = 'checkoutComplete';
 
@@ -54,8 +46,8 @@ class CheckoutController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'update-cart-item' => ['post'],
                     'change-payment-method' => ['post'],
+                    'update-cart-item' => ['post'],
                 ],
             ],
         ];
@@ -90,25 +82,20 @@ class CheckoutController extends Controller
             if (!$model->checkoutCanceled) {
                 if ($model->validate()) { // We have client validation enabled. The model should validate, if not there is a manipulation on user input and we go back to returnUrl
                     if ($model['paymentMethod'] === 'stripe_card') {
-                        // Do not any fullfilment here, that should be done by the Webhook. You can use it to redirect the user to the right place.
+                        // We do not any fullfilment here, that will be done by the Stripe Webhooks (succeed or canceled).
+                        // We use it only to redirect the user.
                         $card = new \kmergen\eshop\stripe\models\Card();
                         $card->load($post);
                         $paygate = $card->paygate;
                         $intent = $paygate->retrieveIntent($card->intentId);
-                        if (isset($intent->metadata->order_id) && $intent->status === 'succeeded') {
-                            $event = new CheckoutFlowEvent();
-                            $event->order = Order::findOne($intent->metadata->order_id);
-                            $event->payment = Payment::findOne($event->order->payment_id);
-                            $this->trigger(self::EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK, $event);
-                            if (!empty($event->flash)) {
-                                Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
-                            }
-                            return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
-                        } else {
-                            // @todo try to trigger the webhook manually or send log message to webmaster
-                            // because payment is done on stripes side but payment was not created on shop side.
-                            return $this->goBack();
+                        $event = new CheckoutFlowEvent();
+                        $event->cartId = $intent->metadata->cart_id;
+                        $event->paymentMethod = $model['paymentMethod'];
+                        $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
+                        if (!empty($event->flash)) {
+                            Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
                         }
+                        return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
                     } elseif ($model->paymentMethod === 'stripe_sepa') {
                         // Cannot use this payment method. Just wait until Stripe has unlocked this feature.
                         $sepa = new \kmergen\eshop\stripe\models\Sepa();
@@ -225,7 +212,7 @@ class CheckoutController extends Controller
                 Cart::removeCartFromSession();
                 return $this->redirect($event->getRedirectUrl());
             } else {
-                Yii::$app->session->setFlash('warning', Yii::t('eshopp', 'PayPal cannot execute the Payment. Pleas choose another Payment method.'));
+                Yii::$app->session->setFlash('warning', Yii::t('eshop', 'PayPal cannot execute the Payment. Pleas choose another Payment method.'));
                 return $this->redirect([$this->defaultAction]);
             }
         } catch (\Throwable $e) {
@@ -274,6 +261,8 @@ class CheckoutController extends Controller
     private function completeCheckout($payment, $order)
     {
         $event = new CheckoutFlowEvent();
+        $event->cartId = $payment->cart_id;
+        $event->paymentMethod = $payment->payment_method;
         $event->order = $order;
         $event->payment = $payment;
         $event->redirectUrl = ['complete', 'id' => $order->id];
@@ -282,9 +271,11 @@ class CheckoutController extends Controller
         if (!$event->emailSent) {
             static::sendOrderConfirmationMail($order);
         }
-        if (!empty($event->flash)) {
-            Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
+        if (empty($event->flash)) {
+            $event->flash[0] = 'success';
+            $event->flash[1] = Yii::t('eshop', 'view.checkout.complete.flash.success');
         }
+        Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
         return $event;
     }
 
