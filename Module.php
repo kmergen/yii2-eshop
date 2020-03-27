@@ -2,11 +2,13 @@
 
 namespace kmergen\eshop;
 
-use Yii;
+use yii\base\Event;
 use yii\i18n\PhpMessageSource;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\web\User;
+use Yii;
 
 class Module extends \yii\base\Module
 {
@@ -25,8 +27,6 @@ class Module extends \yii\base\Module
     public $paymentMethods = [];
 
     public $currencySign = '€';
-
-    public $classEventHandler = [];
 
     public function init()
     {
@@ -127,27 +127,7 @@ class Module extends \yii\base\Module
 
     private function registerEventHandler()
     {
-        $eventHandler = ArrayHelper::merge([
-            'userLogout' => [
-                'class' => \yii\web\User::class,
-                'event' => \yii\web\User::EVENT_BEFORE_LOGOUT,
-                'callable' => [models\Cart::class, 'handleUserBeforeLogout']
-            ],
-//            'paymentInsert' => [
-//                'class' => controllers\CheckoutController::class,
-//                'event' => controllers\CheckoutController::EVENT_CHECKOUT_PAYMENT_INSERT,
-//                'callable' => [models\Order::class, 'checkoutPaymentInsert']
-//            ],
-//            'orderInsert' => [
-//                'class' => models\Order::class,
-//                'event' => models\Order::EVENT_ORDER_INSERT,
-//                'callable' => [controllers\CheckoutController::class, 'handleOrderInsert']
-//            ],
-        ], $this->classEventHandler);
-
-        foreach ($eventHandler as $handler) {
-            \yii\base\Event::on($handler['class'], $handler['event'], $handler['callable']);
-        }
+        Event::on(User::class, User::EVENT_BEFORE_LOGOUT, [models\Cart::class, 'handleUserBeforeLogout']);
     }
 
 }
