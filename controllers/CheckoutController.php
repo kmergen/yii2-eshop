@@ -2,6 +2,7 @@
 
 namespace kmergen\eshop\controllers;
 
+use kmergen\eshop\stripe\models\Card;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
@@ -67,7 +68,7 @@ class CheckoutController extends Controller
                     if ($model['paymentMethod'] === 'stripe_card') {
                         // We do not any fullfilment here, that will be done by the Stripe Webhooks (succeed or canceled).
                         // We use it only to redirect the user.
-                        $card = new \kmergen\eshop\stripe\models\Card();
+                        $card = new Card();
                         $card->load($post);
                         $paygate = $card->paygate;
                         $intent = $paygate->retrieveIntent($card->intentId);
@@ -243,7 +244,7 @@ class CheckoutController extends Controller
      */
     private function completeCheckout($payment, $order)
     {
-        $event = new CheckoutFlowEvent();
+        $event = new CheckoutEvent();
         $event->cartId = $payment->cart_id;
         $event->paymentMethod = $payment->payment_method;
         $event->order = $order;
