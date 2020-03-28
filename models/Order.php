@@ -108,8 +108,8 @@ class Order extends \yii\db\ActiveRecord
     /**
      * This function is called after a Payment is insert. Now we can place the order.
      *
-     * @param $payment kmergen\eshop\models\Payment
-     * @return object kmergen\eshop\models\Order
+     * @param $payment Payment
+     * @return object Order
      */
     public static function createOrder($payment, $cart)
     {

@@ -11,29 +11,12 @@ use kmergen\eshop\models\Customer;
 use kmergen\eshop\models\Cart;
 use kmergen\eshop\models\Order;
 use kmergen\eshop\models\Payment;
-use kmergen\eshop\models\PaymentStatus;
-use kmergen\eshop\events\CheckoutFlowEvent;
+use kmergen\eshop\events\CheckoutEvent;
 
 class CheckoutController extends Controller
 {
 
-    /**
-     * @event Event an event that is triggered when the checkout action aborts.
-     */
-    const EVENT_CHECKOUT_CANCELED = 'checkoutCanceled';
 
-    /**
-     * @event  This event is triggered after a checkout is completed.
-     */
-    const EVENT_CHECKOUT_COMPLETE = 'checkoutComplete';
-
-    /**
-     * @event  This event is triggered after a user is redirected to CheckoutController with the paymentmethod "stripe_card".
-     * The fullfilment of checkout is done by a Stripe Webhook.
-     * This event is mainly used to redirect the user to the right place.
-     * Do not checkout fullfilment with this event, remember it is done by webhooks.
-     */
-    const EVENT_CHECKOUT_COMPLETE_AFTER_STRIPE_WEBHOOK = 'checkoutCompleteAfterStripeWebhook';
 
     /**
      * @inheritdoc
@@ -88,10 +71,10 @@ class CheckoutController extends Controller
                         $card->load($post);
                         $paygate = $card->paygate;
                         $intent = $paygate->retrieveIntent($card->intentId);
-                        $event = new CheckoutFlowEvent();
+                        $event = new CheckoutEvent();
                         $event->cartId = $intent->metadata->cart_id;
                         $event->paymentMethod = $model['paymentMethod'];
-                        $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
+                        $this->trigger(CheckoutEvent::EVENT_CHECKOUT_COMPLETE, $event);
                         if (!empty($event->flash)) {
                             Yii::$app->session->setFlash($event->flash[0], $event->flash[1]);
                         }
@@ -119,8 +102,8 @@ class CheckoutController extends Controller
                 }
             } else {
                 Yii::info('Checkout canceled with Cancel Button', __METHOD__);
-                $event = new CheckoutFlowEvent();
-                $this->trigger(self::EVENT_CHECKOUT_CANCELED, $event);
+                $event = new CheckoutEvent();
+                $this->trigger(CheckoutEvent::EVENT_CHECKOUT_CANCELED, $event);
                 return ($event->redirectUrl === null) ? $this->goBack() : $this->redirect($event->getRedirectUrl());
             }
             $model->paymentMethod = null;
@@ -267,7 +250,7 @@ class CheckoutController extends Controller
         $event->payment = $payment;
         $event->redirectUrl = ['complete', 'id' => $order->id];
         //Yii::endProfile('CheckoutFlow');
-        $this->trigger(self::EVENT_CHECKOUT_COMPLETE, $event);
+        $this->trigger(CheckoutEvent::EVENT_CHECKOUT_COMPLETE, $event);
         if (!$event->emailSent) {
             static::sendOrderConfirmationMail($order);
         }

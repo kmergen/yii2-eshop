@@ -6,10 +6,9 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace kmergen\eshop\stripe;
+namespace kmergen\eshop\events;
 
 use yii\base\Event;
-use yii\helpers\Url;
 
 /**
  * Stripe Payment Intent Event
@@ -19,8 +18,11 @@ use yii\helpers\Url;
  *
  * This event is the base class for Stripe Payment Intent Events.
  */
-class PaymentIntentEvent extends Event
+class StripePaymentIntentEvent extends Event
 {
+    const EVENT_STRIPE_PAYMENT_INTENT_SUCCEED = 'stripePaymentIntentSucceed';
+    const EVENT_STRIPE_PAYMENT_INTENT_FAILED = 'stripePaymentIntentFailed';
+
     /**
      * @var string The Stripe Payment Intent Webhook
      */

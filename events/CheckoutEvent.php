@@ -19,8 +19,18 @@ use yii\helpers\Url;
  *
  * This event is the base class for checkout events.
  */
-class CheckoutFlowEvent extends Event
+class CheckoutEvent extends Event
 {
+    /**
+     * @event Event an event that is triggered when the checkout action aborts.
+     */
+    const EVENT_CHECKOUT_CANCELED = 'checkoutCanceled';
+
+    /**
+     * @event  This event is triggered after a checkout is completed.
+     */
+    const EVENT_CHECKOUT_COMPLETE = 'checkoutComplete';
+
     /**
      * @var $cartId integer The Cart ID
      */

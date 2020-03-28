@@ -3,6 +3,7 @@
 namespace kmergen\eshop\controllers;
 
 use kmergen\eshop\models\Payment;
+use Stripe\Stripe;
 use Yii;
 use yii\web\Controller;
 use yii\base\Exception;
@@ -15,7 +16,7 @@ use kmergen\eshop\stripe\models\Card;
 use kmergen\eshop\stripe\models\Sepa;
 use kmergen\eshop\models\Order;
 use kmergen\eshop\models\Cart;
-use kmergen\eshop\stripe\PaymentIntentEvent;
+use kmergen\eshop\events\StripePaymentIntentEvent;
 use yii\web\Response;
 use yii\helpers\Json;
 
@@ -25,10 +26,6 @@ use yii\helpers\Json;
  */
 class StripeWebhookController extends Controller
 {
-    const EVENT_STRIPE_PAYMENT_INTENT_SUCCEED = 'stripePaymentIntentSucceed';
-    const EVENT_STRIPE_PAYMENT_INTENT_FAILED = 'stripePaymentIntentFailed';
-
-
     /**
      * @var bool
      * Set this to false because stripe can not send the csrf token.
@@ -60,7 +57,7 @@ class StripeWebhookController extends Controller
      * Test method only for testing on localhost without stripe signature because data came from ngrok
      * Handle Webhooks payment_intent.succeeded and payment_intent.payment_failed
      * Return a response with statusCode 200, othwise 400.
-     * @return object
+     * @return object|void
      */
     public function actionTestPaymentIntent()
     {
@@ -73,13 +70,12 @@ class StripeWebhookController extends Controller
         $text['payload'] = $payload;
         \file_put_contents($path, $text, FILE_APPEND);
 
-
         $msg['title'] = "Stripe Webhook {$this->data->type} mit der Id {$intent->id} empfangen";
         Yii::info(\json_encode($msg), __METHOD__);
         if ($this->data->type == "payment_intent.succeeded") {
             $metadata = (array)$intent->metadata;
             if (isset($metadata['order_id'])) {
-                Yii::info('Incomming Stripe webhook ' . $this->data->type . ' with Intent-Id: '. $intent->id . ' has Order ID: ' . $metadata['order_id'], __METHOD__);
+                Yii::info('Incomming Stripe webhook ' . $this->data->type . ' with Intent-Id: ' . $intent->id . ' has Order ID: ' . $metadata['order_id'], __METHOD__);
                 return;
             }
             $cartId = $metadata['cart_id'];
@@ -110,19 +106,18 @@ class StripeWebhookController extends Controller
                 $updateData['metadata'] = $metadata;
                 $updateData['metadata']['order_id'] = $order->id;
                 $updatedIntent = $paygate->updateIntent($intent->id, $updateData);
-                $event = new PaymentIntentEvent();
+                $event = new StripePaymentIntentEvent();
                 $event->payment = $payment;
                 $event->order = $order;
                 $event->webhook = $this->data->type;
                 $event->intent = $updatedIntent;
-                $this->trigger(self::EVENT_STRIPE_PAYMENT_INTENT_SUCCEED, $event);
+                $this->trigger(StripePaymentIntentEvent::EVENT_STRIPE_PAYMENT_INTENT_SUCCEED, $event);
                 if (!$event->emailSent) {
                     CheckoutController::sendOrderConfirmationMail($order);
                 }
             } catch (\Throwable $e) {
                 $transaction->rollBack();
             }
-
         } elseif ($this->data->type == "payment_intent.payment_failed") {
             $msg['last_payment_error'] = $intent->last_payment_error ? $intent->last_payment_error->message : '';
             Yii::info(\json_encode($msg), __METHOD__);
@@ -168,7 +163,7 @@ class StripeWebhookController extends Controller
         if ($this->data->type == "payment_intent.succeeded") {
             $metadata = (array)$intent->metadata;
             if (isset($metadata['order_id'])) {
-                Yii::info('Incomming Stripe webhook ' . $this->data->type . ' with Intent-Id: '. $intent->id . ' has Order ID: ' . $metadata['order_id'], __METHOD__);
+                Yii::info('Incomming Stripe webhook ' . $this->data->type . ' with Intent-Id: ' . $intent->id . ' has Order ID: ' . $metadata['order_id'], __METHOD__);
                 return;
             }
             if (($existingPayment = Payment::find()->where(['cart_id' => $metadata['cart_id']])->one()) !== null) {
@@ -207,13 +202,11 @@ class StripeWebhookController extends Controller
             } catch (\Throwable $e) {
                 $transaction->rollBack();
             }
-
         } elseif ($this->data->type == "payment_intent.payment_failed") {
             $msg['last_payment_error'] = $intent->last_payment_error ? $intent->last_payment_error->message : '';
             Yii::info(\json_encode($msg), __METHOD__);
             //$this->trigger(self::EVENT_STRIPE_PAYMENT_INTENT_FAILED, $event);
         }
-
     }
 
 }
